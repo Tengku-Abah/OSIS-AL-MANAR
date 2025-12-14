@@ -1,0 +1,75 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Kamu bisa tambahkan style global tambahan di bawah ini */
+html,
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', sans-serif;
+  background-color: #020c1b;
+  /* Deep Navy Space */
+  color: #e6f1ff;
+  /* Light Text */
+  scroll-behavior: smooth;
+}
+
+/* FullCalendar Dark Mode Overrides */
+.fc {
+  color: #e6f1ff;
+  font-family: 'Inter', sans-serif;
+}
+
+.fc-theme-standard .fc-scrollgrid,
+.fc-theme-standard td,
+.fc-theme-standard th {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.fc-col-header-cell {
+  background-color: rgba(17, 34, 64, 0.5);
+  padding: 10px 0;
+}
+
+.fc-day-today {
+  background-color: rgba(100, 255, 218, 0.05) !important;
+}
+
+.fc-button-primary {
+  background-color: #112240;
+  border-color: rgba(100, 255, 218, 0.3);
+  color: #64ffda;
+  transition: all 0.3s ease;
+}
+
+.fc-button-primary:hover {
+  background-color: rgba(100, 255, 218, 0.1);
+  border-color: #64ffda;
+  box-shadow: 0 0 10px rgba(100, 255, 218, 0.2);
+}
+
+.fc-button-primary:disabled {
+  background-color: #0a192f;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.fc-toolbar-title {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  color: #ffd700;
+}
+
+.fc-event {
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+a {
+  color: #EB5B00;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
