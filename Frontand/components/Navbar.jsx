@@ -1,117 +1,140 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Rocket } from 'lucide-react';
-import { clsx } from 'clsx';
+import { Home, Users, Calendar, Info, Menu, X, Image, Newspaper, MessageSquare } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 const navItems = [
-    { name: 'Beranda', href: '/' },
-    { name: 'Tentang', href: '/about' },
-    { name: 'Kabinet', href: '/organization' },
-    { name: 'Berita', href: '/news' },
-    { name: 'Galeri', href: '/gallery' },
-    { name: 'Kalender', href: '/calendar' },
+    { name: 'Beranda', href: '/', icon: Home },
+    { name: 'Organisasi', href: '/organization', icon: Users },
+    { name: 'Program', href: '/program', icon: Calendar },
+    { name: 'Galeri', href: '/gallery', icon: Image },
+    { name: 'Berita', href: '/news', icon: Newspaper },
+    { name: 'Agenda', href: '/calendar', icon: Calendar },
+    { name: 'Aspirasi', href: '/suggestion', icon: MessageSquare },
 ];
 
 export function Navbar() {
+    const pathname = usePathname();
     const [isOpen, setIsOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
-    const pathname = usePathname();
 
     useEffect(() => {
-        const handleScroll = () => setScrolled(window.scrollY > 20);
+        const handleScroll = () => {
+            setScrolled(window.scrollY > 20);
+        };
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
     return (
-        <header
-            className={clsx(
-                'fixed top-0 left-0 right-0 z-50 transition-all duration-300 border-b border-transparent',
-                scrolled ? 'bg-deep-navy/80 backdrop-blur-lg shadow-neon-gold/10 border-white/5 py-3' : 'bg-transparent py-5'
-            )}
-        >
-            <div className="container mx-auto px-6 flex items-center justify-between">
-                <Link href="/" className="flex items-center gap-2 group">
-                    <div className="p-2 bg-navy-light rounded-lg border border-neon-gold/30 group-hover:shadow-[0_0_15px_rgba(255,215,0,0.5)] transition-all">
-                        <Rocket className="w-6 h-6 text-neon-gold" />
+        <>
+            <motion.nav
+                initial={{ y: -100 }}
+                animate={{ y: 0 }}
+                transition={{ duration: 0.5 }}
+                className={`fixed top-6 left-0 right-0 z-50 flex justify-center px-4 transition-all duration-300 pointer-events-none`}
+            >
+                <div className={`
+          pointer-events-auto
+          flex items-center gap-2 p-2 rounded-full
+          bg-navy-light/80 backdrop-blur-xl border border-white/10
+          shadow-lg shadow-deep-navy/50
+          transition-all duration-300
+          ${scrolled ? 'scale-90 opacity-90 hover:scale-100 hover:opacity-100' : 'scale-100'}
+        `}>
+                    {/* Logo / Brand (Mobile Only or Compact) */}
+                    <div className="md:hidden pl-4 pr-2">
+                        <span className="font-heading font-bold text-neon-gold text-lg">OSIS</span>
                     </div>
-                    <span className="text-2xl font-bold font-heading text-white tracking-wider">
-                        AL-<span className="text-neon-gold">MANAR</span>
-                    </span>
-                </Link>
 
-                {/* Desktop Menu */}
-                <nav className="hidden md:flex gap-8 items-center">
-                    {navItems.map((item) => (
-                        <Link
-                            key={item.href}
-                            href={item.href}
-                            className={clsx(
-                                "relative text-sm font-medium transition-colors duration-300 hover:text-neon-gold",
-                                pathname === item.href ? "text-neon-gold" : "text-slate-300"
-                            )}
-                        >
-                            {item.name}
-                            {pathname === item.href && (
-                                <motion.div
-                                    layoutId="underline"
-                                    className="absolute -bottom-1 left-0 right-0 h-0.5 bg-neon-gold shadow-[0_0_10px_#ffd700]"
-                                />
-                            )}
-                        </Link>
-                    ))}
-                    <Link
-                        href="/login"
-                        className="px-5 py-2 rounded-full border border-holographic-teal/50 text-holographic-teal text-sm font-bold hover:bg-holographic-teal/10 hover:shadow-[0_0_15px_rgba(100,255,218,0.3)] transition-all"
+                    {/* Desktop Links */}
+                    <div className="hidden md:flex items-center gap-1">
+                        {navItems.map((item) => {
+                            const isActive = pathname === item.href;
+                            return (
+                                <Link key={item.href} href={item.href} className="relative group">
+                                    <div className={`
+                    flex items-center gap-2 px-5 py-2 rounded-full transition-all duration-300
+                    ${isActive
+                                            ? 'bg-neon-gold/10 text-neon-gold shadow-[0_0_10px_rgba(255,215,0,0.2)]'
+                                            : 'text-slate-400 hover:text-white hover:bg-white/5'}
+                  `}>
+                                        <item.icon className="w-4 h-4" />
+                                        <span className="font-medium text-sm">{item.name}</span>
+                                    </div>
+                                    {isActive && (
+                                        <motion.div
+                                            layoutId="navParams"
+                                            className="absolute inset-0 rounded-full border border-neon-gold/30"
+                                            transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                                        />
+                                    )}
+                                </Link>
+                            );
+                        })}
+                    </div>
+
+                    {/* Mobile Menu Toggle */}
+                    <button
+                        onClick={() => setIsOpen(!isOpen)}
+                        className="md:hidden p-2 rounded-full text-slate-300 hover:bg-white/10 transition-colors"
                     >
-                        Portal
-                    </Link>
-                </nav>
+                        {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                    </button>
+                </div>
+            </motion.nav>
 
-                {/* Mobile Toggle */}
-                <button
-                    className="md:hidden text-white"
-                    onClick={() => setIsOpen(!isOpen)}
-                >
-                    {isOpen ? <X /> : <Menu />}
-                </button>
-            </div>
-
-            {/* Mobile Menu */}
+            {/* Mobile Menu Overlay */}
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="md:hidden bg-deep-navy/95 backdrop-blur-xl border-t border-white/10"
+                        initial={{ opacity: 0, pointerEvents: 'none' }}
+                        animate={{ opacity: 1, pointerEvents: 'auto' }}
+                        exit={{ opacity: 0, pointerEvents: 'none' }}
+                        className="fixed inset-0 z-40 bg-deep-navy/90 backdrop-blur-sm md:hidden flex items-center justify-center p-4"
                     >
-                        <div className="flex flex-col p-6 gap-4">
-                            {navItems.map((item) => (
-                                <Link
+                        <div className="flex flex-col gap-6 text-center w-full max-w-sm">
+                            {navItems.map((item, idx) => (
+                                <motion.div
                                     key={item.href}
-                                    href={item.href}
-                                    onClick={() => setIsOpen(false)}
-                                    className="text-lg text-slate-200 hover:text-neon-gold"
+                                    initial={{ y: 20, opacity: 0 }}
+                                    animate={{ y: 0, opacity: 1 }}
+                                    exit={{ y: 20, opacity: 0 }}
+                                    transition={{ delay: 0.05 * idx }}
                                 >
-                                    {item.name}
-                                </Link>
+                                    <Link
+                                        href={item.href}
+                                        onClick={() => setIsOpen(false)}
+                                        className={`block w-full py-4 rounded-xl border border-white/5 text-xl font-heading font-bold transition-all
+                      ${pathname === item.href
+                                                ? 'bg-neon-gold/10 border-neon-gold/30 text-neon-gold'
+                                                : 'bg-navy-light/50 text-white hover:bg-navy-lighter'}
+                    `}
+                                    >
+                                        <div className="flex items-center justify-center gap-3">
+                                            <item.icon className="w-5 h-5" />
+                                            {item.name}
+                                        </div>
+                                    </Link>
+                                </motion.div>
                             ))}
-                            <Link
-                                href="/login"
+
+                            <motion.button
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
                                 onClick={() => setIsOpen(false)}
-                                className="mt-4 text-center py-3 rounded-lg bg-navy-light text-holographic-teal border border-holographic-teal/30"
+                                className="mt-8 mx-auto p-3 rounded-full bg-white/10 text-slate-400 hover:bg-white/20 hover:text-white transition-colors"
                             >
-                                Akses Anggota
-                            </Link>
+                                <X className="w-6 h-6" />
+                            </motion.button>
                         </div>
                     </motion.div>
                 )}
             </AnimatePresence>
-        </header>
+        </>
     );
 }

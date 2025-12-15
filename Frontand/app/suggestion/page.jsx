@@ -1,84 +1,442 @@
 "use client";
 
-import React, { useState } from 'react';
-import { GlassCard } from '../../components/ui/GlassCard';
-import { GlowingButton } from '../../components/ui/GlowingButton';
-import { MessageSquare, Lock, Eye, EyeOff } from 'lucide-react';
-import { motion } from 'framer-motion';
+import React, { useState, useRef, useEffect } from 'react';
+import { SectionWrapper } from '../../components/ui/SectionWrapper';
+import { motion, useMotionValue, useAnimationFrame, animate } from 'framer-motion';
+import { Send, Lock, CheckCircle, User, MessageSquare, ThumbsUp, Filter, MousePointer2 } from 'lucide-react';
+
+const DUMMY_ASPIRATIONS = [
+    {
+        id: 1,
+        name: "Hamba Allah",
+        isAnonymous: true,
+        topic: "Sarana & Prasarana",
+        message: "Mohon diperbaiki AC di ruang perpustakaan karena sering mati sendiri, jadi kurang nyaman saat belajar.",
+        date: "2 Jam yang lalu",
+        status: "Ditinjau",
+        likes: 12
+    },
+    {
+        id: 2,
+        name: "Rizky Ramadhan",
+        class: "XI MIPA 2",
+        isAnonymous: false,
+        topic: "Program Kerja",
+        message: "Usul untuk Classmeeting semester depan diadakan kompetisi E-Sports (Mobile Legends / Valorant).",
+        date: "1 Hari yang lalu",
+        status: "Diterima",
+        likes: 45
+    },
+    {
+        id: 3,
+        name: "Siti Aminah",
+        class: "X IPS 1",
+        isAnonymous: false,
+        topic: "Kegiatan Sekolah",
+        message: "Sebaiknya kegiatan Jumat Bersih rutin diadakan 2 minggu sekali saja supaya lebih efektif.",
+        date: "2 Hari yang lalu",
+        status: "Selesai",
+        likes: 8
+    },
+    {
+        id: 4,
+        name: "Ahmad Zaki",
+        class: "XII IPA 3",
+        isAnonymous: false,
+        topic: "Kinerja Pengurus",
+        message: "Apresiasi untuk panitia Pensi tahun ini, acaranya sangat pecah dan terorganisir rapi!",
+        date: "3 Hari yang lalu",
+        status: "Selesai",
+        likes: 102
+    },
+    {
+        id: 5,
+        name: "Dewi Kartika",
+        class: "XI IPS 2",
+        isAnonymous: false,
+        topic: "Sarana & Prasarana",
+        message: "Wastafel di depan kelas XI IPS 2 airnya mampet, mohon segera diperbaiki.",
+        date: "4 Hari yang lalu",
+        status: "Ditinjau",
+        likes: 5
+    },
+    {
+        id: 6,
+        name: "Hamba Allah",
+        isAnonymous: true,
+        topic: "Kegiatan Sekolah",
+        message: "Bagaimana kalau kita adakan bazar makanan sehat setiap bulan? Bisa melatih kewirausahaan.",
+        date: "5 Hari yang lalu",
+        status: "Diterima",
+        likes: 33
+    },
+    {
+        id: 7,
+        name: "Budi Santoso",
+        class: "X MIPA 1",
+        isAnonymous: false,
+        topic: "Program Kerja",
+        message: "Mohon info kapan pendaftaran anggota baru OSIS dibuka? Berminat seksi dokumentasi.",
+        date: "6 Hari yang lalu",
+        status: "Selesai",
+        likes: 15
+    },
+    {
+        id: 8,
+        name: "Hamba Allah",
+        isAnonymous: true,
+        topic: "Lainnya",
+        message: "Kantin sekolah tolong diperbanyak menu sayurannya, jangan cuma gorengan terus.",
+        date: "1 Minggu yang lalu",
+        status: "Ditinjau",
+        likes: 21
+    },
+    {
+        id: 9,
+        name: "Citra Kirana",
+        class: "XII IPS 1",
+        isAnonymous: false,
+        topic: "Sarana & Prasarana",
+        message: "Parkiran motor siswa sudah terlalu penuh, kadang susah keluar.",
+        date: "1 Minggu yang lalu",
+        status: "Ditinjau",
+        likes: 40
+    },
+    {
+        id: 10,
+        name: "Hamba Allah",
+        isAnonymous: true,
+        topic: "Kinerja Pengurus",
+        message: "Admin Instagram OSIS tolong lebih aktif update story kegiatan harian dong.",
+        date: "1 Minggu yang lalu",
+        status: "Diterima",
+        likes: 55
+    },
+    {
+        id: 11,
+        name: "Fajar Nugraha",
+        class: "XI MIPA 3",
+        isAnonymous: false,
+        topic: "Program Kerja",
+        message: "Usul proker: Workshop Content Creator mengundang alumni sukses.",
+        date: "2 Minggu yang lalu",
+        status: "Diterima",
+        likes: 67
+    },
+    {
+        id: 12,
+        name: "Hamba Allah",
+        isAnonymous: true,
+        topic: "Lainnya",
+        message: "Speaker untuk pengumuman di kelas X bagian pojok suaranya kresek-kresek.",
+        date: "2 Minggu yang lalu",
+        status: "Selesai",
+        likes: 3
+    }
+];
+
+const TOPICS = ["Semua", "Sarana & Prasarana", "Program Kerja", "Kegiatan Sekolah", "Kinerja Pengurus"];
 
 export default function SuggestionPage() {
-    const [isAnonymous, setIsAnonymous] = useState(true);
+    const [submitted, setSubmitted] = useState(false);
+    const [isAnonymous, setIsAnonymous] = useState(false);
+    const [activeFilter, setActiveFilter] = useState("Semua");
+    const [likedPosts, setLikedPosts] = useState([]);
+
+    // DRAG & MARQUEE STATE
+    const [isDragging, setIsDragging] = useState(false);
+    // Increased speed to "Normal" (1.0)
+    const speed = 1.0;
+    const x = useMotionValue(0);
+    const containerRef = useRef(null);
+    const [contentWidth, setContentWidth] = useState(0);
+
+    const filteredAspirations = activeFilter === "Semua"
+        ? DUMMY_ASPIRATIONS
+        : DUMMY_ASPIRATIONS.filter(item => item.topic === activeFilter || (activeFilter === "Kegiatan Sekolah" && item.topic === "Kegiatan Sekolah"));
+
+    // SMART RENDER LOGIC
+    // If data is small (< 5), don't loop/marquee, just show grid to avoid redundancy.
+    // If data is large (>= 5), enable marquee.
+    const isMarqueeMode = filteredAspirations.length >= 5;
+
+    // Duplication for loop (3 sets is usually safe for overflow)
+    const marqueeContent = isMarqueeMode
+        ? [...filteredAspirations, ...filteredAspirations, ...filteredAspirations]
+        : filteredAspirations;
+
+    useEffect(() => {
+        if (isMarqueeMode && containerRef.current) {
+            setContentWidth(containerRef.current.scrollWidth);
+        }
+    }, [filteredAspirations, isMarqueeMode]);
+
+    useAnimationFrame(() => {
+        if (isMarqueeMode && !isDragging && contentWidth > 0) {
+            let newX = x.get() - speed;
+            // Seamless Loop Logic: Reset after 1/3 width (1 set)
+            const oneSetWidth = contentWidth / 3;
+            if (newX <= -oneSetWidth) {
+                newX += oneSetWidth;
+            } else if (newX > 0) {
+                newX -= oneSetWidth;
+            }
+            x.set(newX);
+        }
+    });
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        setTimeout(() => setSubmitted(true), 800);
+    };
+
+    const toggleLike = (id) => {
+        if (likedPosts.includes(id)) {
+            setLikedPosts(likedPosts.filter(postId => postId !== id));
+        } else {
+            setLikedPosts([...likedPosts, id]);
+        }
+    };
+
+    if (submitted) {
+        return (
+            <div className="min-h-screen flex items-center justify-center p-6 container mx-auto text-center">
+                <motion.div
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    className="bg-navy-light/80 backdrop-blur-xl border border-neon-gold/20 p-12 rounded-[2rem] max-w-lg w-full shadow-[0_0_50px_rgba(255,215,0,0.1)]"
+                >
+                    <div className="w-24 h-24 bg-gradient-to-tr from-green-400 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-8 shadow-lg shadow-green-500/20">
+                        <CheckCircle size={48} className="text-white" />
+                    </div>
+                    <h2 className="text-3xl font-bold text-white mb-4">Aspirasi Terkirim!</h2>
+                    <p className="text-slate-300 mb-8 text-lg">
+                        Terima kasih telah berkontribusi.
+                    </p>
+                    <button
+                        onClick={() => setSubmitted(false)}
+                        className="px-10 py-4 bg-gradient-to-r from-neon-gold to-orange-500 text-deep-navy font-bold rounded-xl hover:shadow-[0_0_20px_rgba(255,215,0,0.4)] transition-all"
+                    >
+                        Kirim Lagi
+                    </button>
+                </motion.div>
+            </div>
+        );
+    }
 
     return (
-        <div className="min-h-screen container mx-auto px-6 py-12 flex items-center justify-center">
-            <div className="w-full max-w-2xl">
-                <div className="text-center mb-10">
-                    <div className="w-20 h-20 rounded-full bg-holographic-teal/10 flex items-center justify-center mx-auto mb-6 border border-holographic-teal/30">
-                        <MessageSquare className="w-10 h-10 text-holographic-teal" />
-                    </div>
-                    <h1 className="text-3xl md:text-4xl font-bold font-heading text-white mb-4">The Whisper Box</h1>
-                    <p className="text-slate-400">
-                        Suara Anda sangat berarti. Sampaikan aspirasi, kritik, atau saran membangun untuk OSIS AL-Manar yang lebih baik.
-                    </p>
+        <div className="min-h-screen flex flex-col pt-24 pb-12 overflow-x-hidden">
+
+            {/* HERO & FORM SECTION */}
+            <div className="container mx-auto px-4 content-center z-10 mb-8">
+                <div className="max-w-3xl mx-auto">
+                    <SectionWrapper>
+                        <div className="text-center mb-6">
+                            <h1 className="text-4xl md:text-5xl font-bold font-heading text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-200 to-slate-400 mb-4">
+                                Kotak Aspirasi
+                            </h1>
+                            <p className="text-slate-400">
+                                Sampaikan ide dan saran Anda. Suara Anda didengar.
+                            </p>
+                        </div>
+
+                        <div className="bg-navy-light/40 backdrop-blur-md border border-white/10 p-8 md:p-10 rounded-3xl shadow-2xl relative overflow-hidden">
+                            <form onSubmit={handleSubmit} className="relative z-10">
+                                <div className="flex items-center justify-between mb-6">
+                                    <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                                        <Send className="text-neon-gold" size={20} /> Form Aspirasi
+                                    </h2>
+                                    <div
+                                        onClick={() => setIsAnonymous(!isAnonymous)}
+                                        className={`cursor-pointer px-3 py-1.5 rounded-full border text-[10px] font-bold uppercase tracking-wider flex items-center gap-2 transition-all ${isAnonymous ? 'bg-slate-700 border-slate-600 text-slate-300' : 'bg-blue-500/10 border-blue-500/30 text-blue-400'}`}
+                                    >
+                                        {isAnonymous ? <Lock size={12} /> : <User size={12} />}
+                                        {isAnonymous ? 'Anonim' : 'Publik'}
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                    <motion.div
+                                        animate={{ opacity: isAnonymous ? 0.5 : 1 }}
+                                        className="space-y-2"
+                                    >
+                                        <label className="text-xs font-bold text-slate-400 uppercase ml-1">Identitas</label>
+                                        <input
+                                            type="text"
+                                            required={!isAnonymous}
+                                            disabled={isAnonymous}
+                                            placeholder={isAnonymous ? "Identitas Disembunyikan" : "Nama / Kelas"}
+                                            className="w-full bg-deep-navy/80 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-neon-gold transition-all"
+                                        />
+                                    </motion.div>
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-slate-400 uppercase ml-1">Topik</label>
+                                        <div className="relative">
+                                            <select className="w-full bg-deep-navy/80 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-neon-gold appearance-none cursor-pointer">
+                                                <option>Sarana & Prasarana</option>
+                                                <option>Program Kerja</option>
+                                                <option>Evaluasi Kegiatan</option>
+                                                <option>Lainnya</option>
+                                            </select>
+                                            <Filter className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" size={16} />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2 mb-6">
+                                    <label className="text-xs font-bold text-slate-400 uppercase ml-1">Pesan</label>
+                                    <textarea
+                                        required
+                                        rows={2}
+                                        placeholder="Tulis aspirasi..."
+                                        className="w-full bg-deep-navy/80 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-neon-gold resize-none"
+                                    />
+                                </div>
+
+                                <button
+                                    type="submit"
+                                    className="w-full py-3 bg-gradient-to-r from-neon-gold to-orange-500 rounded-xl text-deep-navy font-bold text-lg hover:shadow-[0_0_20px_rgba(255,215,0,0.3)] transition-all"
+                                >
+                                    Kirim
+                                </button>
+                            </form>
+                        </div>
+                    </SectionWrapper>
+                </div>
+            </div>
+
+            {/* FEED SECTION */}
+            <div className="relative w-full py-8 text-center px-4">
+                <h2 className="text-xl font-bold text-white mb-4 flex items-center justify-center gap-2">
+                    <MessageSquare className="text-blue-400" /> Dinding Aspirasi
+                </h2>
+
+                <div className="flex flex-wrap justify-center gap-2 mb-6">
+                    {TOPICS.map((filter) => (
+                        <button
+                            key={filter}
+                            onClick={() => {
+                                setActiveFilter(filter);
+                                x.set(0);
+                            }}
+                            className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wide transition-all border ${activeFilter === filter
+                                ? 'bg-white text-deep-navy border-white shadow-lg'
+                                : 'bg-transparent text-slate-400 border-white/10 hover:border-white/30 hover:text-white'
+                                }`}
+                        >
+                            {filter}
+                        </button>
+                    ))}
                 </div>
 
-                <GlassCard className="p-8 border-holographic-teal/20">
-                    <div className="flex items-center justify-between mb-8 p-4 bg-navy-lighter rounded-lg border border-white/5">
-                        <div className="flex items-center gap-3">
-                            {isAnonymous ? <EyeOff className="text-slate-400" /> : <Eye className="text-neon-gold" />}
-                            <div>
-                                <h4 className="text-white font-bold text-sm">Mode Anonim</h4>
-                                <p className="text-xs text-slate-500">{isAnonymous ? 'Identitas Anda disembunyikan.' : 'Identitas akan dicatat.'}</p>
-                            </div>
-                        </div>
-                        <button
-                            onClick={() => setIsAnonymous(!isAnonymous)}
-                            className={`relative w-12 h-6 rounded-full transition-colors ${isAnonymous ? 'bg-holographic-teal' : 'bg-slate-600'}`}
-                        >
-                            <motion.div
-                                layout
-                                className="absolute top-1 left-1 w-4 h-4 bg-white rounded-full"
-                                animate={{ x: isAnonymous ? 24 : 0 }}
-                            />
-                        </button>
+                {isMarqueeMode && (
+                    <div className="flex items-center justify-center gap-2 text-slate-500 text-xs animate-pulse mb-6">
+                        <MousePointer2 size={12} />
+                        <span>Geser untuk mencari</span>
                     </div>
+                )}
 
-                    <form className="space-y-6">
-                        {!isAnonymous && (
-                            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="space-y-4">
-                                <input type="text" placeholder="Nama Lengkap" className="w-full bg-navy-lighter border border-white/10 rounded px-4 py-3 text-white focus:outline-none focus:border-holographic-teal transition-colors" />
-                                <input type="text" placeholder="Kelas / Jabatan" className="w-full bg-navy-lighter border border-white/10 rounded px-4 py-3 text-white focus:outline-none focus:border-holographic-teal transition-colors" />
+                {/* CONDITIONAL RENDERING: GRID vs MARQUEE */}
+                {isMarqueeMode ? (
+                    /* >= 5 Items: Infinite Draggable Marquee */
+                    <div className="relative w-full overflow-hidden cursor-grab active:cursor-grabbing border-y border-white/5 bg-navy-light/10">
+                        <motion.div
+                            ref={containerRef}
+                            style={{ x }}
+                            className="flex gap-6 px-6 py-8 w-max"
+                            drag="x"
+                            dragConstraints={{ left: -10000, right: 10000 }}
+                            onDragStart={() => setIsDragging(true)}
+                            onDragEnd={() => setIsDragging(false)}
+                        >
+                            {marqueeContent.map((item, index) => (
+                                <AspirationCard key={`${item.id}-${index}`} item={item} toggleLike={toggleLike} likedPosts={likedPosts} />
+                            ))}
+                        </motion.div>
+                    </div>
+                ) : (
+                    /* < 5 Items: Static Centered Layout */
+                    <div className="container mx-auto max-w-7xl px-4">
+                        {filteredAspirations.length > 0 ? (
+                            <motion.div
+                                className="flex flex-wrap justify-center gap-8"
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.5 }}
+                            >
+                                {filteredAspirations.map((item) => (
+                                    <AspirationCard key={item.id} item={item} toggleLike={toggleLike} likedPosts={likedPosts} />
+                                ))}
+                            </motion.div>
+                        ) : (
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                className="py-12 border border-dashed border-white/10 rounded-2xl bg-white/5"
+                            >
+                                <p className="text-slate-400 font-medium">Belum ada aspirasi di kategori ini.</p>
                             </motion.div>
                         )}
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+}
 
-                        <div>
-                            <label className="block text-xs font-mono text-slate-400 mb-2 uppercase">Kategori Aspirasi</label>
-                            <select className="w-full bg-navy-lighter border border-white/10 rounded px-4 py-3 text-white focus:outline-none focus:border-holographic-teal transition-colors appearance-none cursor-pointer">
-                                <option>Saran Program Kerja</option>
-                                <option>Kritik Membangun</option>
-                                <option>Laporan Fasilitas</option>
-                                <option>Lainnya</option>
-                            </select>
+// Sub-component for Cleaner Code
+function AspirationCard({ item, toggleLike, likedPosts }) {
+    return (
+        <div className="w-[350px] flex-shrink-0 bg-navy-light/40 backdrop-blur-md border border-white/5 p-6 rounded-2xl hover:bg-navy-light/60 hover:border-white/20 transition-all group hover:scale-[1.02] select-none text-left h-full flex flex-col justify-between">
+            <div>
+                <div className="flex justify-between items-start mb-4">
+                    <div className="flex items-center gap-3">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold ${item.isAnonymous
+                            ? 'bg-slate-700 text-slate-400'
+                            : 'bg-gradient-to-br from-blue-500 to-indigo-600 text-white'
+                            }`}>
+                            {item.isAnonymous ? <User size={18} /> : item.name.charAt(0)}
                         </div>
-
                         <div>
-                            <label className="block text-xs font-mono text-slate-400 mb-2 uppercase">Isi Pesan</label>
-                            <textarea
-                                rows="6"
-                                className="w-full bg-navy-lighter border border-white/10 rounded px-4 py-3 text-white focus:outline-none focus:border-holographic-teal transition-colors"
-                                placeholder="Tuliskan aspirasi Anda dengan bahasa yang sopan..."
-                            ></textarea>
+                            <h4 className="text-white font-bold text-sm truncate max-w-[150px]">
+                                {item.name}
+                            </h4>
+                            <p className="text-slate-500 text-[10px]">{item.date}</p>
                         </div>
+                    </div>
+                    <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase border ${item.topic.includes("Sarana") ? 'text-orange-400 border-orange-500/20 bg-orange-500/10' :
+                        item.topic.includes("Program") ? 'text-blue-400 border-blue-500/20 bg-blue-500/10' :
+                            'text-slate-400 border-slate-500/20 bg-slate-500/10'
+                        }`}>
+                        {item.topic.split(" ")[0]}..
+                    </span>
+                </div>
 
-                        <GlowingButton variant="secondary" className="w-full flex items-center justify-center gap-2">
-                            <Lock className="w-4 h-4" /> Kirim Aspirasi {isAnonymous && 'Secara Rahasia'}
-                        </GlowingButton>
-                    </form>
+                <p className="text-slate-300 text-sm leading-relaxed mb-4 line-clamp-3 min-h-[60px]">
+                    "{item.message}"
+                </p>
+            </div>
 
-                    <p className="mt-6 text-center text-xs text-slate-500">
-                        *Setiap pesan yang masuk akan direview oleh MPK (Majelis Perwakilan Kelas) sebelum diteruskan ke Pengurus OSIS.
-                    </p>
-                </GlassCard>
+            <div className="flex items-center justify-between pt-4 border-t border-white/5 mt-auto">
+                <div className={`flex items-center gap-1.5 text-[10px] font-bold uppercase ${item.status === 'Selesai' ? 'text-green-400' :
+                    item.status === 'Diterima' ? 'text-blue-400' : 'text-yellow-500'
+                    }`}>
+                    <div className={`w-1.5 h-1.5 rounded-full ${item.status === 'Selesai' ? 'bg-green-400' :
+                        item.status === 'Diterima' ? 'bg-blue-400' : 'bg-yellow-500'
+                        }`} />
+                    {item.status}
+                </div>
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        toggleLike(item.id);
+                    }}
+                    className={`flex items-center gap-1 text-xs font-bold transition-colors z-10 ${likedPosts.includes(item.id) ? 'text-pink-500' : 'text-slate-500 hover:text-pink-400'
+                        }`}
+                >
+                    <ThumbsUp size={12} className={likedPosts.includes(item.id) ? 'fill-current' : ''} />
+                    {item.likes + (likedPosts.includes(item.id) ? 1 : 0)}
+                </button>
             </div>
         </div>
     );
