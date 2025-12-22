@@ -4,7 +4,7 @@ const path = require('path');
 const dotenv = require('dotenv');
 const cookieParser = require('cookie-parser');
 
-dotenv.config();
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -39,6 +39,11 @@ app.use('/api/gallery', galleryRoutes);
 app.use('/api/news', newsRoutes);
 app.use('/api/calendar', calendarRoutes);
 app.use('/api/aspirations', aspirationRoutes);
+
+// Direct login shortcut
+const authController = require('./controllers/authController');
+app.post('/api/login', authController.login);
+app.post('/api/logout', authController.logout);
 
 // Root Endpoint
 app.get('/', (req, res) => {
