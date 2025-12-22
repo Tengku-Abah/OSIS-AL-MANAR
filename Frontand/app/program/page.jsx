@@ -18,19 +18,6 @@ const DIVISION_CONFIG = {
     'Sekbid Umum': { color: 'text-slate-400', icon: <Users size={40} /> },
 };
 
-// Simple icons
-function Briefcase({ size }) {
-    return (
-        <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="14" x="2" y="7" rx="2" ry="2" /><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" /></svg>
-    );
-}
-
-function BookOpen({ size }) {
-    return (
-        <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" /></svg>
-    );
-}
-
 export default function ProgramPage() {
     const [view, setView] = useState('divisions');
     const [selectedDivision, setSelectedDivision] = useState(null);
