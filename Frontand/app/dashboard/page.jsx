@@ -1,85 +1,169 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { GlassCard } from '../../components/ui/GlassCard';
+import { useAuth } from '../../context/AuthContext';
+import {
+    LayoutDashboard,
+    Image as ImageIcon,
+    Users,
+    Calendar,
+    FileText,
+    MessageSquare,
+    Newspaper,
+    LogOut,
+    Menu,
+    X
+} from 'lucide-react';
 import { GlowingButton } from '../../components/ui/GlowingButton';
-import { FileText, Users, Bell, Download, Upload } from 'lucide-react';
+import HeroManager from '../../components/dashboard/HeroManager';
+import OrgManager from '../../components/dashboard/OrgManager';
+import ProgramManager from '../../components/dashboard/ProgramManager';
+import GalleryManager from '../../components/dashboard/GalleryManager';
+import NewsManager from '../../components/dashboard/NewsManager';
+import CalendarManager from '../../components/dashboard/CalendarManager';
+import AspirationManager from '../../components/dashboard/AspirationManager';
+
+// Placeholder Components (We will create these next)
+const Overview = ({ user }) => (
+    <div className="space-y-6">
+        <h2 className="text-2xl font-bold text-white">Welcome back, {user?.username}</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <GlassCard className="p-6">
+                <h3 className="text-slate-400 text-sm">System Status</h3>
+                <p className="text-2xl font-bold text-green-400">ONLINE</p>
+            </GlassCard>
+            <GlassCard className="p-6">
+                <h3 className="text-slate-400 text-sm">Clearance Level</h3>
+                <p className="text-2xl font-bold text-neon-gold">LEVEL 5</p>
+            </GlassCard>
+            <GlassCard className="p-6">
+                <h3 className="text-slate-400 text-sm">Active Session</h3>
+                <p className="text-2xl font-bold text-white">SECURE</p>
+            </GlassCard>
+        </div>
+    </div>
+);
+
+
 
 export default function DashboardPage() {
+    const { user, loading, logout } = useAuth();
+    const router = useRouter();
+    const [activeTab, setActiveTab] = useState('overview');
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+    useEffect(() => {
+        if (!loading && !user) {
+            router.push('/login');
+        }
+    }, [user, loading, router]);
+
+    if (loading) return <div className="fixed inset-0 z-50 bg-black flex items-center justify-center text-neon-gold animate-pulse">LOADING DASHBOARD...</div>;
+    if (!user) return null;
+
+    const tabs = [
+        { id: 'overview', label: 'Overview', icon: LayoutDashboard, component: <Overview user={user} /> },
+        { id: 'hero', label: 'Hero Section', icon: ImageIcon, component: <HeroManager /> },
+        { id: 'org', label: 'Organization', icon: Users, component: <OrgManager /> },
+        { id: 'program', label: 'Work Programs', icon: FileText, component: <ProgramManager /> },
+        { id: 'gallery', label: 'Gallery', icon: ImageIcon, component: <GalleryManager /> },
+        { id: 'news', label: 'News & Mading', icon: Newspaper, component: <NewsManager /> },
+        { id: 'calendar', label: 'Calendar', icon: Calendar, component: <CalendarManager /> },
+        { id: 'aspirations', label: 'Aspirations', icon: MessageSquare, component: <AspirationManager /> },
+    ];
+
+    const ActiveComponent = tabs.find(t => t.id === activeTab)?.component || <Overview />;
+
     return (
-        <div className="min-h-screen container mx-auto px-6 py-12">
-            <div className="flex justify-between items-center mb-10">
-                <div>
-                    <h1 className="text-3xl font-bold font-heading text-white">COMMAND CENTER</h1>
-                    <p className="text-slate-400 font-mono text-sm">System Status: <span className="text-green-400">OPTIMAL</span></p>
+        <div className="min-h-[125vh] flex">
+            {/* Sidebar Desktop */}
+            <aside className="hidden lg:flex flex-col w-64 bg-deep-navy border-r border-white/5 fixed left-0 top-0 bottom-0 pt-24 z-20">
+                <div className="px-6 mb-8">
+                    <h1 className="font-heading font-bold text-xl text-white">ADMIN<span className="text-neon-gold">PANEL</span></h1>
+                    <p className="text-xs text-slate-400">v2.0.1 Stable</p>
                 </div>
-                <div className="flex items-center gap-4">
-                    <div className="text-right hidden md:block">
-                        <p className="text-white font-bold">Admin OSIS</p>
-                        <p className="text-xs text-neon-gold">Level 5 Clearance</p>
-                    </div>
-                    <div className="w-10 h-10 rounded-full bg-slate-600 border border-white/20"></div>
-                </div>
-            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
-                <GlassCard className="p-4 flex items-center justify-between">
-                    <div>
-                        <p className="text-slate-400 text-xs uppercase">Pending Proposals</p>
-                        <h3 className="text-2xl font-bold text-white">3</h3>
-                    </div>
-                    <FileText className="text-neon-gold" />
-                </GlassCard>
-                <GlassCard className="p-4 flex items-center justify-between">
-                    <div>
-                        <p className="text-slate-400 text-xs uppercase">Active Members</p>
-                        <h3 className="text-2xl font-bold text-white">42</h3>
-                    </div>
-                    <Users className="text-holographic-teal" />
-                </GlassCard>
-                <GlassCard className="p-4 flex items-center justify-between">
-                    <div>
-                        <p className="text-slate-400 text-xs uppercase">New Aspirations</p>
-                        <h3 className="text-2xl font-bold text-white">12</h3>
-                    </div>
-                    <Bell className="text-red-400" />
-                </GlassCard>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-2 space-y-6">
-                    <h2 className="text-xl font-bold text-white mb-4">Internal Documents</h2>
-                    {[1, 2, 3].map((i) => (
-                        <GlassCard key={i} className="p-4 flex items-center justify-between hover:bg-white/5 cursor-pointer">
-                            <div className="flex items-center gap-4">
-                                <div className="p-2 bg-navy-lighter rounded">
-                                    <FileText className="w-5 h-5 text-slate-300" />
-                                </div>
-                                <div>
-                                    <h4 className="text-white font-medium">Laporan_Pertanggungjawaban_Desember.pdf</h4>
-                                    <p className="text-xs text-slate-500">Uploaded 2 hours ago by Sekretaris</p>
-                                </div>
-                            </div>
-                            <GlowingButton variant="outline" className="text-xs py-1 px-3">
-                                <Download className="w-3 h-3" />
-                            </GlowingButton>
-                        </GlassCard>
+                <nav className="flex-1 overflow-y-auto px-4 space-y-2 custom-scrollbar">
+                    {tabs.map((tab) => (
+                        <button
+                            key={tab.id}
+                            onClick={() => setActiveTab(tab.id)}
+                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === tab.id
+                                ? 'bg-neon-gold/20 text-neon-gold border border-neon-gold/30'
+                                : 'text-slate-400 hover:text-white hover:bg-white/5'
+                                }`}
+                        >
+                            <tab.icon className="w-5 h-5" />
+                            <span className="font-medium text-sm">{tab.label}</span>
+                        </button>
                     ))}
+
+                </nav>
+
+                <div className="p-4 bg-deep-navy border-t border-white/5">
+                    <button
+                        onClick={logout}
+                        className="w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:bg-red-500/10 rounded-xl transition-colors hover:text-red-300"
+                    >
+                        <LogOut className="w-5 h-5" />
+                        <span className="font-medium text-sm">Logout</span>
+                    </button>
+                </div>
+            </aside>
+
+            {/* Mobile Header & Content */}
+            <main className="flex-1 lg:ml-64 min-h-screen">
+                {/* Mobile Toggle */}
+                <div className="lg:hidden flex items-center justify-between p-4 bg-navy-light/50 backdrop-blur border-b border-white/5 sticky top-0 z-30">
+                    <span className="font-heading font-bold text-white">ADMIN PANEL</span>
+                    <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="text-white">
+                        {mobileMenuOpen ? <X /> : <Menu />}
+                    </button>
                 </div>
 
-                <div>
-                    <h2 className="text-xl font-bold text-white mb-4">Quick Actions</h2>
-                    <div className="space-y-4">
-                        <GlassCard className="p-4">
-                            <h3 className="text-white font-bold mb-2">Upload File</h3>
-                            <div className="border-2 border-dashed border-white/10 rounded-lg p-6 text-center hover:border-neon-gold/50 transition-colors cursor-pointer">
-                                <Upload className="w-8 h-8 text-slate-400 mx-auto mb-2" />
-                                <p className="text-xs text-slate-400">Drag files here or click to browse</p>
-                            </div>
-                        </GlassCard>
+                {/* Mobile Menu */}
+                {mobileMenuOpen && (
+                    <div className="lg:hidden fixed inset-0 z-20 bg-deep-navy pt-20 px-4 pb-4 overflow-y-auto">
+                        <nav className="space-y-2">
+                            {tabs.map((tab) => (
+                                <button
+                                    key={tab.id}
+                                    onClick={() => { setActiveTab(tab.id); setMobileMenuOpen(false); }}
+                                    className={`w-full flex items-center gap-3 px-4 py-4 rounded-xl transition-all ${activeTab === tab.id
+                                        ? 'bg-neon-gold/20 text-neon-gold border border-neon-gold/30'
+                                        : 'text-slate-400 hover:text-white hover:bg-white/5'
+                                        }`}
+                                >
+                                    <tab.icon className="w-5 h-5" />
+                                    <span className="font-medium">{tab.label}</span>
+                                </button>
+                            ))}
+                            <button
+                                onClick={logout}
+                                className="w-full flex items-center gap-3 px-4 py-4 text-red-400 hover:bg-red-500/10 rounded-xl mt-4"
+                            >
+                                <LogOut className="w-5 h-5" />
+                                <span className="font-medium">Logout</span>
+                            </button>
+                        </nav>
+                    </div>
+                )}
+
+                <div className="p-6 lg:p-10 max-w-7xl mx-auto">
+                    {/* Header Content */}
+                    <div className="mb-8">
+                        <h2 className="text-3xl font-heading font-bold text-white">{tabs.find(t => t.id === activeTab)?.label}</h2>
+                        <p className="text-slate-400 text-sm">Manage your {tabs.find(t => t.id === activeTab)?.label.toLowerCase()} content here.</p>
+                    </div>
+
+                    {/* Main Content Area */}
+                    <div className="animate-fade-in">
+                        {ActiveComponent}
                     </div>
                 </div>
-            </div>
+            </main>
         </div>
     );
 }

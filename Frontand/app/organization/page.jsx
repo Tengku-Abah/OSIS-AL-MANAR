@@ -5,88 +5,40 @@ import { SectionWrapper } from '../../components/ui/SectionWrapper';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Instagram, Target, Users, X, Briefcase, ChevronRight, Info, Shield } from 'lucide-react';
 
-// --- DATA ---
-const bph = [
-    { id: 1, name: 'Mustafa Raja Ungguli', role: 'Ketua OSIS', quote: 'Memimpin adalah melayani dengan hati.', img: 'bg-gradient-to-br from-yellow-500 to-orange-600' },
-    { id: 2, name: 'Mabel Belincia', role: 'Wakil Ketua OSIS', quote: 'Kolaborasi kunci inovasi.', img: 'bg-gradient-to-br from-blue-500 to-indigo-600' },
-];
+import api from '../../services/api';
 
-const secretaries = [
-    { id: 4, name: 'Raditya Putra M.', role: 'Sekretaris 1', img: 'bg-slate-700' },
-    { id: 5, name: 'Anindita Hadinasa', role: 'Sekretaris 2', img: 'bg-slate-700' },
-];
-
-const treasurers = [
-    { id: 6, name: 'M. Pandu Hidayatullah', role: 'Bendahara 1', img: 'bg-slate-700' },
-    { id: 7, name: 'Ivian', role: 'Bendahara 2', img: 'bg-slate-700' },
-];
-
-const divisions = [
-    {
-        name: 'Olahraga & Kesehatan',
-        color: 'text-orange-500',
-        desc: "Mengembangkan potensi atletik dan sportivitas siswa.",
-        programs: ["Liga Futsal", "Senam Pagi"],
-        members: [
-            { name: 'Rizky Pratama', role: 'Koordinator' },
-            { name: 'Dimas Anggara', role: 'Anggota' },
-            { name: 'Bayu Saputra', role: 'Anggota' },
-        ]
-    },
-    {
-        name: 'Kewirausahaan',
-        color: 'text-yellow-500',
-        desc: "Membangun jiwa entrepreneurship dan kemandirian dana.",
-        programs: ["Market Day", "Koperasi Jujur"],
-        members: [
-            { name: 'Siti Aminah', role: 'Koordinator' },
-            { name: 'Rina Wati', role: 'Anggota' },
-            { name: 'Budi Santoso', role: 'Anggota' },
-        ]
-    },
-    {
-        name: 'TIK & Literasi Digital',
-        color: 'text-blue-500',
-        desc: "Digitalisasi informasi dan peningkatan minat baca.",
-        programs: ["Website Update", "Pelatihan Desain"],
-        members: [
-            { name: 'Andi Wijaya', role: 'Koordinator' },
-            { name: 'Maya Sari', role: 'Anggota' },
-            { name: 'Doni Tata', role: 'Anggota' },
-        ]
-    },
-    {
-        name: 'Ketaqwaan',
-        color: 'text-green-500',
-        desc: "Memperkokoh iman dan taqwa warga sekolah.",
-        programs: ["Kajian Jumat", "Peringatan PHBI"],
-        members: [
-            { name: 'Abdullah', role: 'Koordinator' },
-            { name: 'Fatimah', role: 'Anggota' },
-        ]
-    },
-];
-
-// --- COMPONENTS ---
+// --- HELPER CONSTANTS ---
+const DIVISION_INFO = {
+    'Olahraga & Kesehatan': { color: 'text-orange-500', desc: "Mengembangkan potensi atletik dan sportivitas siswa.", programs: ["Liga Futsal", "Senam Pagi"] },
+    'Kewirausahaan': { color: 'text-yellow-500', desc: "Membangun jiwa entrepreneurship dan kemandirian dana.", programs: ["Market Day", "Koperasi Jujur"] },
+    'TIK & Literasi Digital': { color: 'text-blue-500', desc: "Digitalisasi informasi dan peningkatan minat baca.", programs: ["Website Update", "Pelatihan Desain"] },
+    'Ketaqwaan': { color: 'text-green-500', desc: "Memperkokoh iman dan taqwa warga sekolah.", programs: ["Kajian Jumat", "Peringatan PHBI"] },
+};
 
 const TeamCard = ({ member, onClick, isLarge = false }) => (
     <div
         onClick={() => onClick && onClick(member)}
         className={`
-            group relative cursor-pointer
-            bg-navy-light/40 border border-white/5 rounded-2xl overflow-hidden shadow-lg
-            transition-all duration-300 hover:border-white/20 hover:bg-navy-light/60 hover:-translate-y-1 hover:shadow-neon-gold/10
-            flex flex-col items-center text-center z-10
-            ${isLarge ? 'p-8 pb-8 w-64' : 'p-4 w-full'}
-        `}
+        group relative cursor-pointer
+        bg-navy-light/40 border border-white/5 rounded-2xl overflow-hidden shadow-lg
+        transition-all duration-300 hover:border-white/20 hover:bg-navy-light/60 hover:-translate-y-1 hover:shadow-neon-gold/10
+        flex flex-col items-center text-center z-10
+        ${isLarge ? 'p-8 pb-8 w-64' : 'p-4 w-full'}
+    `}
     >
         <div className={`
-            rounded-full bg-deep-navy border-2 border-white/10 flex items-center justify-center text-slate-300 font-bold mb-4
-            transition-transform duration-500 group-hover:scale-110 group-hover:border-white/30 group-hover:text-white
-            ${isLarge ? 'w-24 h-24 text-3xl shadow-2xl' : 'w-16 h-16 text-lg shadow-lg'}
-            ${member.img || 'bg-gradient-to-br from-slate-700 to-slate-800'}
-        `}>
-            {member.name ? member.name.charAt(0) : '?'}
+        rounded-full bg-deep-navy border-2 border-white/10 flex items-center justify-center text-slate-300 font-bold mb-4
+        transition-transform duration-500 group-hover:scale-110 group-hover:border-white/30 group-hover:text-white
+        ${isLarge ? 'w-24 h-24 text-3xl shadow-2xl' : 'w-16 h-16 text-lg shadow-lg'}
+        relative overflow-hidden
+    `}>
+            {member.photo ? (
+                <img src={`${SERVER_URL}${member.photo}`} alt={member.name} className="w-full h-full object-cover" />
+            ) : (
+                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-700 to-slate-800">
+                    {member.name ? member.name.charAt(0) : '?'}
+                </div>
+            )}
         </div>
 
         <div className="w-full">
@@ -94,7 +46,7 @@ const TeamCard = ({ member, onClick, isLarge = false }) => (
                 {member.name}
             </h3>
             <p className={`uppercase tracking-widest font-medium truncate ${isLarge ? 'text-neon-gold text-xs' : 'text-slate-500 text-[9px]'}`}>
-                {member.role}
+                {member.position || member.role}
             </p>
         </div>
     </div>
@@ -102,7 +54,53 @@ const TeamCard = ({ member, onClick, isLarge = false }) => (
 
 export default function OrganizationPage() {
     const [selectedMember, setSelectedMember] = useState(null);
-    const [activeTab, setActiveTab] = useState('about'); // merged about+visi
+    const [activeTab, setActiveTab] = useState('about');
+    const [members, setMembers] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    React.useEffect(() => {
+        const fetchMembers = async () => {
+            try {
+                const data = await api.get('/members');
+                setMembers(data);
+            } catch (error) {
+                console.error("Failed to fetch members:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchMembers();
+    }, []);
+
+    // Filter Data
+    const ketua = members.find(m => m.position.toLowerCase().includes('ketua') && !m.position.toLowerCase().includes('wakil'));
+    const wakil = members.find(m => m.position.toLowerCase().includes('wakil'));
+
+    // Fallbacks if not found (prevent crash)
+    const bph1 = ketua || { name: 'Vacant', position: 'Ketua OSIS', division: 'BPH' };
+    const bph2 = wakil || { name: 'Vacant', position: 'Wakil Ketua', division: 'BPH' };
+
+    const secretaries = members.filter(m => m.position.toLowerCase().includes('sekretaris'));
+    const treasurers = members.filter(m => m.position.toLowerCase().includes('bendahara'));
+
+    // Group Divisions
+    const divisionGroups = members
+        .filter(m => m.division !== 'BPH')
+        .reduce((acc, curr) => {
+            if (!acc[curr.division]) acc[curr.division] = [];
+            acc[curr.division].push(curr);
+            return acc;
+        }, {});
+
+    const divisions = Object.keys(divisionGroups).map(divName => ({
+        name: divName,
+        members: divisionGroups[divName],
+        ...DIVISION_INFO[divName] || { color: 'text-white', desc: 'Divisi OSIS', programs: [] }
+    }));
+
+    // --- COMPONENTS --- (moved up)
+
+
 
     return (
         <div className="min-h-screen container mx-auto px-6 py-24 pb-32">
@@ -240,7 +238,7 @@ export default function OrganizationPage() {
                                     <SectionWrapper delay={0.1}>
                                         <div className="flex flex-col items-center">
                                             <div className="text-xs font-bold text-neon-gold uppercase tracking-widest mb-2 bg-deep-navy px-3 py-1 rounded-full border border-white/10">Ketua Umum</div>
-                                            <TeamCard member={bph[0]} isLarge onClick={setSelectedMember} />
+                                            <TeamCard member={bph1} isLarge onClick={setSelectedMember} />
                                         </div>
                                     </SectionWrapper>
                                 </div>
@@ -253,7 +251,7 @@ export default function OrganizationPage() {
                                     <SectionWrapper delay={0.2}>
                                         <div className="flex flex-col items-center">
                                             <div className="text-xs font-bold text-blue-400 uppercase tracking-widest mb-2 bg-deep-navy px-3 py-1 rounded-full border border-white/10">Wakil Ketua</div>
-                                            <TeamCard member={bph[1]} isLarge onClick={setSelectedMember} />
+                                            <TeamCard member={bph2} isLarge onClick={setSelectedMember} />
                                         </div>
                                     </SectionWrapper>
                                 </div>
@@ -367,7 +365,7 @@ export default function OrganizationPage() {
                                     {selectedMember.name.charAt(0)}
                                 </div>
                                 <h3 className="text-2xl font-bold text-white mb-1">{selectedMember.name}</h3>
-                                <p className="text-neon-gold text-sm font-bold uppercase tracking-widest mb-8">{selectedMember.role}</p>
+                                <p className="text-neon-gold text-sm font-bold uppercase tracking-widest mb-8">{selectedMember.position}</p>
 
                                 {selectedMember.quote && (
                                     <p className="text-slate-300 italic mb-6">"{selectedMember.quote}"</p>

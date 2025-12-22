@@ -14,14 +14,14 @@ export function GlobalBackground() {
 
         const resizeCanvas = () => {
             canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+            canvas.height = window.innerHeight * 1.25; // Compensate for 80% zoom
         };
 
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
 
         let particles = [];
-        const particleCount = 100; // Balanced for Mobile/Desktop
+        const particleCount = 160; // Increased for better distribution
 
         // Mouse/Touch state
         const input = {

@@ -3,8 +3,9 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Home, Users, Calendar, Info, Menu, X, Image, Newspaper, MessageSquare } from 'lucide-react';
+import { Home, Users, Calendar, Info, Menu, X, Image, Newspaper, MessageSquare, LogIn } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { GlowingButton } from './ui/GlowingButton';
 
 const navItems = [
     { name: 'Beranda', href: '/', icon: Home },
@@ -75,6 +76,16 @@ export function Navbar() {
                                 </Link>
                             );
                         })}
+
+                        {/* Login Button Desktop */}
+                        <div className="ml-2 pl-2 border-l border-white/10">
+                            <Link href="/login">
+                                <div className="flex items-center gap-2 px-5 py-2 rounded-full bg-neon-gold/20 text-neon-gold hover:bg-neon-gold hover:text-deep-navy transition-all duration-300 font-bold text-sm">
+                                    <LogIn className="w-4 h-4" />
+                                    <span>Login</span>
+                                </div>
+                            </Link>
+                        </div>
                     </div>
 
                     {/* Mobile Menu Toggle */}
@@ -121,6 +132,25 @@ export function Navbar() {
                                     </Link>
                                 </motion.div>
                             ))}
+
+                            {/* Mobile Login Button */}
+                            <motion.div
+                                initial={{ y: 20, opacity: 0 }}
+                                animate={{ y: 0, opacity: 1 }}
+                                exit={{ y: 20, opacity: 0 }}
+                                transition={{ delay: 0.4 }}
+                            >
+                                <Link
+                                    href="/login"
+                                    onClick={() => setIsOpen(false)}
+                                    className="block w-full py-4 rounded-xl border border-neon-gold/30 bg-neon-gold/20 text-neon-gold hover:bg-neon-gold hover:text-deep-navy transition-all text-xl font-heading font-bold"
+                                >
+                                    <div className="flex items-center justify-center gap-3">
+                                        <LogIn className="w-5 h-5" />
+                                        Login Dashboard
+                                    </div>
+                                </Link>
+                            </motion.div>
 
                             <motion.button
                                 initial={{ opacity: 0 }}
