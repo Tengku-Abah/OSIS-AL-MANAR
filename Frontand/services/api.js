@@ -120,6 +120,22 @@ const api = {
         });
         if (!res.ok) throw new Error(await res.text() || 'API Error');
         return res.json();
+    },
+
+    // Helper for PATCH requests
+    patch: async (endpoint, data = {}) => {
+        const baseUrl = getApiBaseUrl();
+        if (!baseUrl) {
+            throw new Error('API not configured. Set NEXT_PUBLIC_API_URL in Vercel.');
+        }
+        const res = await fetch(`${baseUrl}${endpoint}`, {
+            method: 'PATCH',
+            headers: getHeaders(),
+            body: JSON.stringify(data),
+            credentials: 'include',
+        });
+        if (!res.ok) throw new Error(await res.text() || 'API Error');
+        return res.json();
     }
 };
 

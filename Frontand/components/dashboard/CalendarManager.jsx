@@ -76,6 +76,15 @@ export default function CalendarManager() {
                                 required
                             />
                         </div>
+                        <div>
+                            <label className="block text-xs text-slate-400 mb-1">Description (optional)</label>
+                            <textarea
+                                value={formData.description}
+                                onChange={e => setFormData({ ...formData, description: e.target.value })}
+                                className="w-full bg-navy-lighter/50 border border-white/10 rounded p-2 text-white resize-none h-20"
+                                placeholder="Brief description of the event..."
+                            />
+                        </div>
                         <GlowingButton type="submit" className="w-full">
                             Add to Timeline
                         </GlowingButton>

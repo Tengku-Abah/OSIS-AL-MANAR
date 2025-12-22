@@ -5,7 +5,7 @@ import { GlassCard } from '../ui/GlassCard';
 import { GlowingButton } from '../ui/GlowingButton';
 import { CustomSelect } from '../ui/CustomSelect';
 import { Plus, Trash2, Edit2, X, Upload, Eye, LayoutTemplate, FileText } from 'lucide-react';
-import api from '../../services/api';
+import api, { SERVER_URL } from '../../services/api';
 
 export default function NewsManager() {
     const [news, setNews] = useState([]);

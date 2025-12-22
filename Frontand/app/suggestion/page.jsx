@@ -7,7 +7,7 @@ import { Send, Lock, CheckCircle, User, MessageSquare, ThumbsUp, Filter, MousePo
 import api from '../../services/api';
 import { DUMMY_ASPIRATIONS } from '../../data/aspirationsData';
 
-const TOPICS = ["Semua"];
+const TOPICS = ["Semua", "Akademik", "Fasilitas", "Kegiatan", "Organisasi", "Lainnya"];
 
 export default function SuggestionPage() {
     const [submitted, setSubmitted] = useState(false);
@@ -19,7 +19,7 @@ export default function SuggestionPage() {
     const [submitting, setSubmitting] = useState(false);
 
     // Form state
-    const [formData, setFormData] = useState({ sender: '', message: '' });
+    const [formData, setFormData] = useState({ sender: '', message: '', category: 'Umum' });
 
     // DRAG & MARQUEE STATE
     const [isDragging, setIsDragging] = useState(false);
@@ -87,10 +87,11 @@ export default function SuggestionPage() {
         try {
             await api.post('/aspirations', {
                 sender: isAnonymous ? null : formData.sender,
-                message: formData.message
+                message: formData.message,
+                category: formData.category
             });
             setSubmitted(true);
-            setFormData({ sender: '', message: '' });
+            setFormData({ sender: '', message: '', category: 'Umum' });
             fetchAspirations(); // Refresh the list
         } catch (error) {
             alert('Gagal mengirim aspirasi: ' + error.message);
@@ -191,6 +192,23 @@ export default function SuggestionPage() {
                                             className="w-full bg-deep-navy/80 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-neon-gold resize-none"
                                         />
                                     </div>
+                                </div>
+
+                                {/* Category Dropdown */}
+                                <div className="space-y-2 mb-6">
+                                    <label className="text-xs font-bold text-slate-400 uppercase ml-1">Kategori Aspirasi</label>
+                                    <select
+                                        value={formData.category}
+                                        onChange={e => setFormData({ ...formData, category: e.target.value })}
+                                        className="w-full bg-deep-navy/80 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-neon-gold transition-all"
+                                    >
+                                        <option value="Umum">Umum</option>
+                                        <option value="Akademik">Akademik</option>
+                                        <option value="Fasilitas">Fasilitas</option>
+                                        <option value="Kegiatan">Kegiatan</option>
+                                        <option value="Organisasi">Organisasi</option>
+                                        <option value="Lainnya">Lainnya</option>
+                                    </select>
                                 </div>
 
                                 <button

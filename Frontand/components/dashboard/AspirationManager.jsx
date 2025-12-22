@@ -26,7 +26,7 @@ export default function AspirationManager() {
 
     const togglePrivacy = async (id) => {
         try {
-            await api.put(`/aspirations/${id}/privacy`);
+            await api.patch(`/aspirations/${id}/privacy`);
             fetchAspirations();
         } catch (error) {
             alert('Error toggling privacy: ' + error.message);
@@ -54,8 +54,8 @@ export default function AspirationManager() {
                                     <button
                                         onClick={() => togglePrivacy(item.id)}
                                         className={`flex items-center gap-1 text-xs px-2 py-1 rounded border ${item.isPrivate
-                                                ? 'border-red-500 text-red-400 hover:bg-red-500/10'
-                                                : 'border-green-500 text-green-400 hover:bg-green-500/10'
+                                            ? 'border-red-500 text-red-400 hover:bg-red-500/10'
+                                            : 'border-green-500 text-green-400 hover:bg-green-500/10'
                                             }`}
                                     >
                                         {item.isPrivate ? <><EyeOff className="w-3 h-3" /> Hidden</> : <><Eye className="w-3 h-3" /> Public</>}
