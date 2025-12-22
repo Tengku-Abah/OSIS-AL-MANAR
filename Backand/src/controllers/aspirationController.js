@@ -11,14 +11,14 @@ exports.getAllAspirations = async (req, res) => {
 
 exports.createAspiration = async (req, res) => {
     try {
-        const { sender, message } = req.body;
+        const { sender, message, category } = req.body;
 
         const query = `
-            INSERT INTO "Aspiration" ("sender", "message") 
-            VALUES ($1, $2) 
+            INSERT INTO "Aspiration" ("sender", "message", "category") 
+            VALUES ($1, $2, $3) 
             RETURNING *`;
 
-        const result = await db.query(query, [sender || 'Anonymous', message]);
+        const result = await db.query(query, [sender || 'Anonymous', message, category || 'Umum']);
         res.status(201).json(result.rows[0]);
     } catch (error) {
         res.status(500).json({ message: error.message });
