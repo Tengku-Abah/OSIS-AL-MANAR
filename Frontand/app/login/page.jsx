@@ -1,16 +1,14 @@
 "use client";
 
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { GlassCard } from '../../components/ui/GlassCard';
 import { GlowingButton } from '../../components/ui/GlowingButton';
 import { ShieldCheck, Lock } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { API_BASE_URL } from '../../services/api';
+import api, { API_BASE_URL } from '../../services/api';
 
 export default function LoginPage() {
     const { login } = useAuth();
-    const router = useRouter(); // Keeping router just in case, though context handles redirect
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
         username: '',
@@ -28,6 +26,11 @@ export default function LoginPage() {
         setError('');
 
         try {
+            // Check if API is configured
+            if (!API_BASE_URL) {
+                throw new Error('API belum dikonfigurasi. Hubungi administrator.');
+            }
+
             const res = await fetch(`${API_BASE_URL}/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
