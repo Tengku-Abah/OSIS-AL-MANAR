@@ -9,10 +9,31 @@ dotenv.config({ path: path.resolve(__dirname, '../.env') });
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
+// Middleware - CORS untuk multiple origins
+const allowedOrigins = [
+    'http://localhost:3000',
+    'https://osis-al-manar.vercel.app',
+    /\.vercel\.app$/  // Allow all Vercel preview deployments
+];
+
 app.use(cors({
-    origin: 'http://localhost:3000', // Allow Frontend
-    credentials: true // Allow Cookies
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps, Postman, curl)
+        if (!origin) return callback(null, true);
+
+        // Check if origin matches allowed list
+        const isAllowed = allowedOrigins.some(allowed => {
+            if (allowed instanceof RegExp) return allowed.test(origin);
+            return allowed === origin;
+        });
+
+        if (isAllowed) {
+            callback(null, true);
+        } else {
+            callback(null, true); // For now, allow all origins for debugging
+        }
+    },
+    credentials: true
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
