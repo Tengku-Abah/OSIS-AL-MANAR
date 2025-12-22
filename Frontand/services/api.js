@@ -26,6 +26,17 @@ const getApiBaseUrl = () => {
 export const API_BASE_URL = getApiBaseUrl();
 export const SERVER_URL = API_BASE_URL ? API_BASE_URL.replace('/api', '') : '';
 
+// Common headers for all requests (includes ngrok-skip-browser-warning)
+const getHeaders = (includeContentType = true) => {
+    const headers = {
+        'ngrok-skip-browser-warning': 'true'  // Skip ngrok warning page
+    };
+    if (includeContentType) {
+        headers['Content-Type'] = 'application/json';
+    }
+    return headers;
+};
+
 // Debug log (only in development)
 if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
     console.log('🔌 API_BASE_URL:', API_BASE_URL);
@@ -41,7 +52,7 @@ const api = {
         }
         const res = await fetch(`${baseUrl}${endpoint}`, {
             method: 'GET',
-            headers: { 'Content-Type': 'application/json' },
+            headers: getHeaders(),
             credentials: 'include',
         });
         if (!res.ok) throw new Error(await res.text() || 'API Error');
@@ -56,7 +67,7 @@ const api = {
         }
         const res = await fetch(`${baseUrl}${endpoint}`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: getHeaders(),
             body: JSON.stringify(data),
             credentials: 'include',
         });
@@ -72,6 +83,7 @@ const api = {
         }
         const res = await fetch(`${baseUrl}${endpoint}`, {
             method: method,
+            headers: getHeaders(false),  // No Content-Type for FormData
             body: formData,
             credentials: 'include',
         });
@@ -87,6 +99,7 @@ const api = {
         }
         const res = await fetch(`${baseUrl}${endpoint}`, {
             method: 'DELETE',
+            headers: getHeaders(false),
             credentials: 'include',
         });
         if (!res.ok) throw new Error(await res.text() || 'API Error');
@@ -101,7 +114,7 @@ const api = {
         }
         const res = await fetch(`${baseUrl}${endpoint}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: getHeaders(),
             body: JSON.stringify(data),
             credentials: 'include',
         });
