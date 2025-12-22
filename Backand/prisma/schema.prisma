@@ -1,0 +1,83 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model AdminUser {
+  id       Int     @id @default(autoincrement())
+  username String  @unique @db.VarChar(255)
+  password String
+  role     String? @default("admin") @db.VarChar(50)
+}
+
+model Aspiration {
+  id        Int       @id @default(autoincrement())
+  sender    String?   @db.VarChar(255)
+  message   String
+  isPrivate Boolean?  @default(false)
+  createdAt DateTime? @default(now()) @db.Timestamp(6)
+  category  String?   @default("Umum") @db.VarChar(50)
+}
+
+model CalendarEvent {
+  id          Int      @id @default(autoincrement())
+  title       String   @db.VarChar(255)
+  date        DateTime @db.Timestamp(6)
+  description String
+}
+
+model GalleryItem {
+  id          Int      @id @default(autoincrement())
+  title       String   @db.VarChar(255)
+  image       String
+  isActive    Boolean? @default(true)
+  description String?
+}
+
+model HeroSection {
+  id         Int    @id @default(autoincrement())
+  eventName  String @db.VarChar(255)
+  eventImage String
+}
+
+model NewsItem {
+  id        Int       @id @default(autoincrement())
+  title     String    @db.VarChar(255)
+  content   String
+  image     String?
+  createdAt DateTime? @default(now()) @db.Timestamp(6)
+}
+
+model OrganizationMember {
+  id       Int    @id @default(autoincrement())
+  name     String @db.VarChar(255)
+  position String @db.VarChar(255)
+  photo    String
+  division String @db.VarChar(255)
+}
+
+model WorkProgram {
+  id          Int     @id @default(autoincrement())
+  title       String  @db.VarChar(255)
+  description String
+  image       String
+  status      String  @default("PLANNED") @db.VarChar(50)
+  division    String? @default("Sekbid Umum") @db.VarChar(255)
+  pic         String? @default("BPH (Inti)") @db.VarChar(255)
+}
+
+model Document {
+  id             Int      @id @default(autoincrement())
+  category       String   @db.VarChar(50)  // 'panitia', 'galeri', 'news', 'main'
+  name           String   @db.VarChar(255)
+  mimeType       String   @db.VarChar(100)
+  gdriveId       String   @unique @db.VarChar(255)
+  webViewLink    String
+  webContentLink String
+  createdAt      DateTime @default(now()) @db.Timestamp(6)
+}
+

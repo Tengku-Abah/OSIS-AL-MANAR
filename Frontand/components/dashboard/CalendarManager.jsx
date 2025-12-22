@@ -9,7 +9,7 @@ import api from '../../services/api';
 export default function CalendarManager() {
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [formData, setFormData] = useState({ title: '', date: '' });
+    const [formData, setFormData] = useState({ title: '', date: '', description: '' });
 
     useEffect(() => {
         fetchEvents();
@@ -32,7 +32,7 @@ export default function CalendarManager() {
         e.preventDefault();
         try {
             await api.post('/calendar', formData);
-            setFormData({ title: '', date: '' });
+            setFormData({ title: '', date: '', description: '' });
             fetchEvents();
         } catch (error) {
             alert('Error: ' + error.message);

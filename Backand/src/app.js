@@ -37,6 +37,7 @@ const galleryRoutes = require('./routes/galleryRoutes');
 const newsRoutes = require('./routes/newsRoutes');
 const calendarRoutes = require('./routes/calendarRoutes');
 const aspirationRoutes = require('./routes/aspirationRoutes');
+const documentRoutes = require('./routes/documentRoutes');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/hero', heroRoutes);
@@ -46,6 +47,7 @@ app.use('/api/gallery', galleryRoutes);
 app.use('/api/news', newsRoutes);
 app.use('/api/calendar', calendarRoutes);
 app.use('/api/aspirations', aspirationRoutes);
+app.use('/api/documents', documentRoutes);
 
 // Direct login shortcut
 const authController = require('./controllers/authController');

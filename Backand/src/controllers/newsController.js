@@ -1,6 +1,5 @@
 const db = require('../config/db');
-const fs = require('fs');
-const path = require('path');
+const { uploadFile } = require('../services/gdriveService');
 
 exports.getAllNews = async (req, res) => {
     try {
@@ -14,7 +13,13 @@ exports.getAllNews = async (req, res) => {
 exports.createNews = async (req, res) => {
     try {
         const { title, content } = req.body;
-        const image = req.file ? `/uploads/${req.file.filename}` : null;
+        let image = null;
+
+        if (req.file) {
+            console.log('Uploading news image to Google Drive (category: news)...');
+            const driveResult = await uploadFile(req.file, 'news');
+            image = driveResult.webViewLink;
+        }
 
         const query = `
             INSERT INTO "NewsItem" ("title", "content", "image") 
@@ -24,6 +29,7 @@ exports.createNews = async (req, res) => {
         const result = await db.query(query, [title, content, image]);
         res.status(201).json(result.rows[0]);
     } catch (error) {
+        console.error('Error creating news:', error);
         res.status(500).json({ message: error.message });
     }
 };
@@ -39,11 +45,11 @@ exports.updateNews = async (req, res) => {
 
         let image = news.image;
         if (req.file) {
-            image = `/uploads/${req.file.filename}`;
-            if (news.image) {
-                const oldPath = path.join(__dirname, '../../', news.image);
-                if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
-            }
+            console.log('Uploading new news image to Google Drive (category: news)...');
+            const driveResult = await uploadFile(req.file, 'news');
+            image = driveResult.webViewLink;
+
+            // Note: Tidak menghapus file lama di Drive karena hanya menyimpan URL
         }
 
         const updateQuery = `
@@ -55,6 +61,7 @@ exports.updateNews = async (req, res) => {
         const result = await db.query(updateQuery, [title, content, image, id]);
         res.json(result.rows[0]);
     } catch (error) {
+        console.error('Error updating news:', error);
         res.status(500).json({ message: error.message });
     }
 };
@@ -65,12 +72,6 @@ exports.deleteNews = async (req, res) => {
         const findResult = await db.query('SELECT * FROM "NewsItem" WHERE id = $1', [id]);
 
         if (findResult.rows.length === 0) return res.status(404).json({ message: 'News not found' });
-        const news = findResult.rows[0];
-
-        if (news.image) {
-            const oldPath = path.join(__dirname, '../../', news.image);
-            if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
-        }
 
         await db.query('DELETE FROM "NewsItem" WHERE id = $1', [id]);
         res.json({ message: 'News deleted' });

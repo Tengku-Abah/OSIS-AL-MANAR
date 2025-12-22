@@ -1,65 +1,89 @@
-const db = require('../config/db');
-const fs = require('fs');
-const path = require('path');
+const { PrismaClient } = require('@prisma/client');
+const { uploadFile } = require('../services/gdriveService');
+
+const prisma = new PrismaClient();
 
 // Get Hero Settings
-exports.getHeroSettings = async (req, res) => {
+const getHeroSettings = async (req, res) => {
     try {
-        const result = await db.query('SELECT * FROM "HeroSection" LIMIT 1');
-        if (result.rows.length === 0) {
-            return res.status(200).json({
-                eventName: 'Default Event',
-                eventImage: ''
+        let hero = await prisma.heroSection.findFirst();
+
+        // If no hero settings exist, create default
+        if (!hero) {
+            hero = await prisma.heroSection.create({
+                data: {
+                    eventName: 'Default Event',
+                    eventImage: 'https://via.placeholder.com/1920x1080'
+                }
             });
         }
-        res.json(result.rows[0]);
+
+        res.status(200).json({
+            success: true,
+            data: hero
+        });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error('Error fetching hero settings:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server Error'
+        });
     }
 };
 
 // Update Hero Settings
-exports.updateHeroSettings = async (req, res) => {
+const updateHeroSettings = async (req, res) => {
     try {
         const { eventName } = req.body;
-        let eventImage = req.body.eventImage;
+        let imageUrl = null;
 
+        // Jika ada file yang diupload -> Upload ke GDrive (category: main)
         if (req.file) {
-            eventImage = `/uploads/${req.file.filename}`;
-
-            // Delete old image
-            const oldHero = await db.query('SELECT * FROM "HeroSection" LIMIT 1');
-            if (oldHero.rows.length > 0 && oldHero.rows[0].eventImage) {
-                const oldPath = path.join(__dirname, '../../', oldHero.rows[0].eventImage);
-                if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
-            }
+            console.log('Uploading hero image to Google Drive (category: main)...');
+            const driveResult = await uploadFile(req.file, 'main');
+            imageUrl = driveResult.webViewLink; // Gunakan view link untuk ditampilkan
         }
 
-        // Check if exists
-        const check = await db.query('SELECT * FROM "HeroSection" LIMIT 1');
+        // Cari record hero yang ada
+        const existingHero = await prisma.heroSection.findFirst();
 
         let updatedHero;
-        if (check.rows.length > 0) {
-            const id = check.rows[0].id;
-            const updateQuery = `
-                UPDATE "HeroSection" 
-                SET "eventName" = COALESCE($1, "eventName"), 
-                    "eventImage" = COALESCE($2, "eventImage") 
-                WHERE id = $3 
-                RETURNING *`;
-            const result = await db.query(updateQuery, [eventName, eventImage, id]);
-            updatedHero = result.rows[0];
+        if (existingHero) {
+            // Update
+            updatedHero = await prisma.heroSection.update({
+                where: { id: existingHero.id },
+                data: {
+                    eventName: eventName || existingHero.eventName, // Keep old name if not provided
+                    // Jika ada image baru update, jika tidak pakai yang lama
+                    eventImage: imageUrl || existingHero.eventImage
+                }
+            });
         } else {
-            const insertQuery = `
-                INSERT INTO "HeroSection" ("eventName", "eventImage") 
-                VALUES ($1, $2) 
-                RETURNING *`;
-            const result = await db.query(insertQuery, [eventName || 'New Event', eventImage || '']);
-            updatedHero = result.rows[0];
+            // Create baru (fallback case)
+            updatedHero = await prisma.heroSection.create({
+                data: {
+                    eventName: eventName || 'New Event',
+                    eventImage: imageUrl || 'https://via.placeholder.com/1920x1080'
+                }
+            });
         }
 
-        res.json(updatedHero);
+        res.status(200).json({
+            success: true,
+            message: 'Hero settings updated successfully',
+            data: updatedHero
+        });
+
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error('Error updating hero settings:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message || 'Server Error'
+        });
     }
+};
+
+module.exports = {
+    getHeroSettings,
+    updateHeroSettings
 };

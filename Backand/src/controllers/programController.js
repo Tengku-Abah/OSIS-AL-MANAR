@@ -1,6 +1,5 @@
 const db = require('../config/db');
-const fs = require('fs');
-const path = require('path');
+const { uploadFile } = require('../services/gdriveService');
 
 exports.getAllPrograms = async (req, res) => {
     try {
@@ -14,7 +13,13 @@ exports.getAllPrograms = async (req, res) => {
 exports.createProgram = async (req, res) => {
     try {
         const { title, description, status, division, pic } = req.body;
-        const image = req.file ? `/uploads/${req.file.filename}` : '';
+        let image = '';
+
+        if (req.file) {
+            console.log('Uploading program image to Google Drive (category: proker)...');
+            const driveResult = await uploadFile(req.file, 'proker');
+            image = driveResult.webViewLink;
+        }
 
         const query = `
             INSERT INTO "WorkProgram" ("title", "description", "status", "division", "pic", "image") 
@@ -24,6 +29,7 @@ exports.createProgram = async (req, res) => {
         const result = await db.query(query, [title, description, status || 'PLANNED', division || 'Sekbid Umum', pic || 'BPH (Inti)', image]);
         res.status(201).json(result.rows[0]);
     } catch (error) {
+        console.error('Error creating program:', error);
         res.status(500).json({ message: error.message });
     }
 };
@@ -39,11 +45,11 @@ exports.updateProgram = async (req, res) => {
 
         let image = program.image;
         if (req.file) {
-            image = `/uploads/${req.file.filename}`;
-            if (program.image) {
-                const oldPath = path.join(__dirname, '../../', program.image);
-                if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
-            }
+            console.log('Uploading new program image to Google Drive (category: proker)...');
+            const driveResult = await uploadFile(req.file, 'proker');
+            image = driveResult.webViewLink;
+
+            // Note: Tidak menghapus file lama di Drive karena hanya menyimpan URL
         }
 
         const updateQuery = `
@@ -55,6 +61,7 @@ exports.updateProgram = async (req, res) => {
         const result = await db.query(updateQuery, [title, description, status, division, pic, image, id]);
         res.json(result.rows[0]);
     } catch (error) {
+        console.error('Error updating program:', error);
         res.status(500).json({ message: error.message });
     }
 };
@@ -65,12 +72,6 @@ exports.deleteProgram = async (req, res) => {
         const findResult = await db.query('SELECT * FROM "WorkProgram" WHERE id = $1', [id]);
 
         if (findResult.rows.length === 0) return res.status(404).json({ message: 'Program not found' });
-        const program = findResult.rows[0];
-
-        if (program.image) {
-            const oldPath = path.join(__dirname, '../../', program.image);
-            if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
-        }
 
         await db.query('DELETE FROM "WorkProgram" WHERE id = $1', [id]);
         res.json({ message: 'Program deleted' });
