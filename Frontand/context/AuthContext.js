@@ -2,7 +2,7 @@
 
 import { createContext, useState, useEffect, useContext } from 'react';
 import { useRouter } from 'next/navigation';
-import api, { API_BASE_URL } from '../services/api';
+import api from '../services/api';
 
 const AuthContext = createContext();
 
@@ -17,16 +17,8 @@ export const AuthProvider = ({ children }) => {
 
     const checkUserLoggedIn = async () => {
         try {
-            const res = await fetch(`${API_BASE_URL}/auth/me`, {
-                credentials: 'include'
-            });
-            const data = await res.json();
-
-            if (res.ok) {
-                setUser(data);
-            } else {
-                setUser(null);
-            }
+            const data = await api.get('/auth/me');
+            setUser(data);
         } catch (error) {
             console.error(error);
             setUser(null);
@@ -42,10 +34,7 @@ export const AuthProvider = ({ children }) => {
 
     const logout = async () => {
         try {
-            await fetch(`${API_BASE_URL}/logout`, {
-                method: 'POST',
-                credentials: 'include'
-            });
+            await api.post('/logout', {});
             setUser(null);
             router.push('/login');
         } catch (error) {
