@@ -1,17 +1,43 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { SectionWrapper } from '../../components/ui/SectionWrapper';
-import { Calendar, User, ArrowRight } from 'lucide-react';
+import { Calendar, User, ArrowRight, Loader2, Newspaper } from 'lucide-react';
 import Link from 'next/link';
-
-const newsItems = [
-    { title: "Pemilihan Ketua OSIS Periode 2026/2027 Segera Dimulai", date: "16 Dec 2025", author: "Humas", category: "Pengumuman", excerpt: "Panitia Pemilihan OSIS (PPO) resmi dibentuk. Simak jadwal lengkap rangakaian kampanye dan debat kandidat." },
-    { title: "Al-Manar Raih Juara 1 Lomba Robotik Nasional", date: "10 Dec 2025", author: "Redaksi", category: "Prestasi", excerpt: "Tim Robotik sekolah kembali mengharumkan nama almamater dengan inovasi 'Smart farming' mereka." },
-    { title: "Recap: Kemeriahan Classmeeting Semester Ganjil", date: "05 Dec 2025", author: "Div. Olahraga", category: "Kegiatan", excerpt: "Sorotan momen terbaik dari pertandingan futsal, basket, dan supporter terheboh minggu ini." },
-];
+import api, { SERVER_URL } from '../../services/api';
+import { DUMMY_NEWS } from '../../data/newsData';
 
 export default function NewsPage() {
+    const [newsItems, setNewsItems] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchNews = async () => {
+            try {
+                const data = await api.get('/news');
+                // Use dummy data if API returns empty
+                setNewsItems(data && data.length > 0 ? data : DUMMY_NEWS);
+            } catch (error) {
+                console.error('Failed to fetch news:', error);
+                // Fallback to dummy data on error
+                setNewsItems(DUMMY_NEWS);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchNews();
+    }, []);
+
+    // Helper to format date
+    const formatDate = (dateStr) => {
+        if (!dateStr) return '';
+        return new Date(dateStr).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+    };
+
+    // Get featured (first) and rest
+    const featuredNews = newsItems[0];
+    const restNews = newsItems.slice(1);
+
     return (
         <div className="min-h-screen container mx-auto px-6 py-24">
             <SectionWrapper>
@@ -20,59 +46,83 @@ export default function NewsPage() {
                         <h1 className="text-4xl md:text-6xl font-bold font-heading text-white mb-4">Berita Terkini</h1>
                         <p className="text-slate-400">Update informasi resmi seputar sekolah dan kegiatan siswa.</p>
                     </div>
-
-                    <div className="flex gap-2">
-                        {['Semua', 'Pengumuman', 'Prestasi', 'Kegiatan'].map(filter => (
-                            <button key={filter} className="px-4 py-2 rounded-full border border-white/10 text-slate-400 hover:text-white hover:bg-white/5 text-sm transition-colors first:bg-neon-gold first:text-deep-navy first:border-neon-gold">
-                                {filter}
-                            </button>
-                        ))}
-                    </div>
                 </div>
             </SectionWrapper>
 
-            {/* Featured News */}
-            <SectionWrapper delay={0.1}>
-                <div className="relative rounded-3xl overflow-hidden bg-navy-light border border-white/5 aspect-[16/7] mb-12 group cursor-pointer">
-                    {/* Background Image Placeholder */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-deep-navy via-transparent to-transparent z-10" />
-                    <div className="absolute inset-0 bg-slate-800 z-0" />
-
-                    <div className="absolute bottom-0 left-0 p-8 md:p-12 z-20 max-w-3xl">
-                        <span className="bg-neon-gold text-deep-navy px-3 py-1 rounded text-xs font-bold uppercase mb-4 inline-block">Featured</span>
-                        <h2 className="text-3xl md:text-5xl font-bold text-white mb-4 group-hover:text-blue-400 transition-colors">
-                            Malam Puncak Pentas Seni "Al-Manar Art Fest 2025"
-                        </h2>
-                        <div className="flex items-center gap-6 text-slate-300 text-sm">
-                            <span className="flex items-center gap-2"><Calendar size={14} /> 20 Dec 2025</span>
-                            <span className="flex items-center gap-2"><User size={14} /> Panitia Art Fest</span>
-                        </div>
-                    </div>
+            {loading ? (
+                <div className="flex items-center justify-center py-24">
+                    <Loader2 className="w-12 h-12 text-neon-gold animate-spin" />
                 </div>
-            </SectionWrapper>
+            ) : newsItems.length === 0 ? (
+                <div className="text-center py-24 border border-dashed border-white/10 rounded-xl">
+                    <Newspaper className="w-16 h-16 mx-auto mb-4 text-slate-600" />
+                    <p className="text-slate-500">Belum ada berita yang tersedia.</p>
+                </div>
+            ) : (
+                <>
+                    {/* Featured News */}
+                    {featuredNews && (
+                        <SectionWrapper delay={0.1}>
+                            <div className="relative rounded-3xl overflow-hidden bg-navy-light border border-white/5 aspect-[16/7] mb-12 group cursor-pointer">
+                                {/* Background Image */}
+                                {featuredNews.image && (
+                                    <img
+                                        src={`${SERVER_URL}${featuredNews.image}`}
+                                        alt={featuredNews.title}
+                                        className="absolute inset-0 w-full h-full object-cover z-0"
+                                    />
+                                )}
+                                <div className="absolute inset-0 bg-gradient-to-t from-deep-navy via-deep-navy/70 to-transparent z-10" />
 
-            {/* News Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                {newsItems.map((item, idx) => (
-                    <SectionWrapper key={idx} delay={0.2 + idx * 0.1}>
-                        <div className="group bg-navy-light/30 border border-white/5 rounded-2xl p-6 hover:border-white/20 transition-all hover:-translate-y-1">
-                            <div className="flex items-center justify-between mb-4">
-                                <span className="text-xs font-bold text-neon-gold uppercase tracking-wider">{item.category}</span>
-                                <span className="text-xs text-slate-500">{item.date}</span>
+                                <div className="absolute bottom-0 left-0 p-8 md:p-12 z-20 max-w-3xl">
+                                    <span className="bg-neon-gold text-deep-navy px-3 py-1 rounded text-xs font-bold uppercase mb-4 inline-block">Featured</span>
+                                    <h2 className="text-3xl md:text-5xl font-bold text-white mb-4 group-hover:text-blue-400 transition-colors">
+                                        {featuredNews.title}
+                                    </h2>
+                                    <div className="flex items-center gap-6 text-slate-300 text-sm">
+                                        <span className="flex items-center gap-2"><Calendar size={14} /> {formatDate(featuredNews.createdAt)}</span>
+                                        <span className="flex items-center gap-2"><User size={14} /> Admin OSIS</span>
+                                    </div>
+                                </div>
                             </div>
-                            <h3 className="text-xl font-bold text-white mb-3 group-hover:text-blue-400 transition-colors line-clamp-2">
-                                {item.title}
-                            </h3>
-                            <p className="text-slate-400 text-sm mb-6 line-clamp-3">
-                                {item.excerpt}
-                            </p>
-                            <Link href="#" className="inline-flex items-center gap-2 text-sm text-white font-medium hover:gap-3 transition-all">
-                                Baca Selengkapnya <ArrowRight size={14} />
-                            </Link>
+                        </SectionWrapper>
+                    )}
+
+                    {/* News Grid */}
+                    {restNews.length > 0 && (
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                            {restNews.map((item, idx) => (
+                                <SectionWrapper key={item.id} delay={0.2 + idx * 0.1}>
+                                    <div className="group bg-navy-light/30 border border-white/5 rounded-2xl overflow-hidden hover:border-white/20 transition-all hover:-translate-y-1">
+                                        {/* Image */}
+                                        {item.image && (
+                                            <div className="aspect-video overflow-hidden">
+                                                <img
+                                                    src={`${SERVER_URL}${item.image}`}
+                                                    alt={item.title}
+                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                                />
+                                            </div>
+                                        )}
+                                        <div className="p-6">
+                                            <div className="flex items-center justify-between mb-4">
+                                                <span className="text-xs font-bold text-neon-gold uppercase tracking-wider">Berita</span>
+                                                <span className="text-xs text-slate-500">{formatDate(item.createdAt)}</span>
+                                            </div>
+                                            <h3 className="text-xl font-bold text-white mb-3 group-hover:text-blue-400 transition-colors line-clamp-2">
+                                                {item.title}
+                                            </h3>
+                                            <p className="text-slate-400 text-sm mb-6 line-clamp-3">
+                                                {item.content}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </SectionWrapper>
+                            ))}
                         </div>
-                    </SectionWrapper>
-                ))}
-            </div>
+                    )}
+                </>
+            )}
         </div>
     );
 }

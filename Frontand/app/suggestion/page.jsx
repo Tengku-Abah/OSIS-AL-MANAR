@@ -2,158 +2,54 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { SectionWrapper } from '../../components/ui/SectionWrapper';
-import { motion, useMotionValue, useAnimationFrame, animate } from 'framer-motion';
-import { Send, Lock, CheckCircle, User, MessageSquare, ThumbsUp, Filter, MousePointer2 } from 'lucide-react';
+import { motion, useMotionValue, useAnimationFrame } from 'framer-motion';
+import { Send, Lock, CheckCircle, User, MessageSquare, ThumbsUp, Filter, MousePointer2, Loader2 } from 'lucide-react';
+import api from '../../services/api';
+import { DUMMY_ASPIRATIONS } from '../../data/aspirationsData';
 
-const DUMMY_ASPIRATIONS = [
-    {
-        id: 1,
-        name: "Hamba Allah",
-        isAnonymous: true,
-        topic: "Sarana & Prasarana",
-        message: "Mohon diperbaiki AC di ruang perpustakaan karena sering mati sendiri, jadi kurang nyaman saat belajar.",
-        date: "2 Jam yang lalu",
-        status: "Ditinjau",
-        likes: 12
-    },
-    {
-        id: 2,
-        name: "Rizky Ramadhan",
-        class: "XI MIPA 2",
-        isAnonymous: false,
-        topic: "Program Kerja",
-        message: "Usul untuk Classmeeting semester depan diadakan kompetisi E-Sports (Mobile Legends / Valorant).",
-        date: "1 Hari yang lalu",
-        status: "Diterima",
-        likes: 45
-    },
-    {
-        id: 3,
-        name: "Siti Aminah",
-        class: "X IPS 1",
-        isAnonymous: false,
-        topic: "Kegiatan Sekolah",
-        message: "Sebaiknya kegiatan Jumat Bersih rutin diadakan 2 minggu sekali saja supaya lebih efektif.",
-        date: "2 Hari yang lalu",
-        status: "Selesai",
-        likes: 8
-    },
-    {
-        id: 4,
-        name: "Ahmad Zaki",
-        class: "XII IPA 3",
-        isAnonymous: false,
-        topic: "Kinerja Pengurus",
-        message: "Apresiasi untuk panitia Pensi tahun ini, acaranya sangat pecah dan terorganisir rapi!",
-        date: "3 Hari yang lalu",
-        status: "Selesai",
-        likes: 102
-    },
-    {
-        id: 5,
-        name: "Dewi Kartika",
-        class: "XI IPS 2",
-        isAnonymous: false,
-        topic: "Sarana & Prasarana",
-        message: "Wastafel di depan kelas XI IPS 2 airnya mampet, mohon segera diperbaiki.",
-        date: "4 Hari yang lalu",
-        status: "Ditinjau",
-        likes: 5
-    },
-    {
-        id: 6,
-        name: "Hamba Allah",
-        isAnonymous: true,
-        topic: "Kegiatan Sekolah",
-        message: "Bagaimana kalau kita adakan bazar makanan sehat setiap bulan? Bisa melatih kewirausahaan.",
-        date: "5 Hari yang lalu",
-        status: "Diterima",
-        likes: 33
-    },
-    {
-        id: 7,
-        name: "Budi Santoso",
-        class: "X MIPA 1",
-        isAnonymous: false,
-        topic: "Program Kerja",
-        message: "Mohon info kapan pendaftaran anggota baru OSIS dibuka? Berminat seksi dokumentasi.",
-        date: "6 Hari yang lalu",
-        status: "Selesai",
-        likes: 15
-    },
-    {
-        id: 8,
-        name: "Hamba Allah",
-        isAnonymous: true,
-        topic: "Lainnya",
-        message: "Kantin sekolah tolong diperbanyak menu sayurannya, jangan cuma gorengan terus.",
-        date: "1 Minggu yang lalu",
-        status: "Ditinjau",
-        likes: 21
-    },
-    {
-        id: 9,
-        name: "Citra Kirana",
-        class: "XII IPS 1",
-        isAnonymous: false,
-        topic: "Sarana & Prasarana",
-        message: "Parkiran motor siswa sudah terlalu penuh, kadang susah keluar.",
-        date: "1 Minggu yang lalu",
-        status: "Ditinjau",
-        likes: 40
-    },
-    {
-        id: 10,
-        name: "Hamba Allah",
-        isAnonymous: true,
-        topic: "Kinerja Pengurus",
-        message: "Admin Instagram OSIS tolong lebih aktif update story kegiatan harian dong.",
-        date: "1 Minggu yang lalu",
-        status: "Diterima",
-        likes: 55
-    },
-    {
-        id: 11,
-        name: "Fajar Nugraha",
-        class: "XI MIPA 3",
-        isAnonymous: false,
-        topic: "Program Kerja",
-        message: "Usul proker: Workshop Content Creator mengundang alumni sukses.",
-        date: "2 Minggu yang lalu",
-        status: "Diterima",
-        likes: 67
-    },
-    {
-        id: 12,
-        name: "Hamba Allah",
-        isAnonymous: true,
-        topic: "Lainnya",
-        message: "Speaker untuk pengumuman di kelas X bagian pojok suaranya kresek-kresek.",
-        date: "2 Minggu yang lalu",
-        status: "Selesai",
-        likes: 3
-    }
-];
-
-const TOPICS = ["Semua", "Sarana & Prasarana", "Program Kerja", "Kegiatan Sekolah", "Kinerja Pengurus"];
+const TOPICS = ["Semua"];
 
 export default function SuggestionPage() {
     const [submitted, setSubmitted] = useState(false);
     const [isAnonymous, setIsAnonymous] = useState(false);
     const [activeFilter, setActiveFilter] = useState("Semua");
     const [likedPosts, setLikedPosts] = useState([]);
+    const [aspirations, setAspirations] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [submitting, setSubmitting] = useState(false);
+
+    // Form state
+    const [formData, setFormData] = useState({ sender: '', message: '' });
 
     // DRAG & MARQUEE STATE
     const [isDragging, setIsDragging] = useState(false);
-    // Increased speed to "Normal" (1.0)
     const speed = 1.0;
     const x = useMotionValue(0);
     const containerRef = useRef(null);
     const [contentWidth, setContentWidth] = useState(0);
 
-    const filteredAspirations = activeFilter === "Semua"
-        ? DUMMY_ASPIRATIONS
-        : DUMMY_ASPIRATIONS.filter(item => item.topic === activeFilter || (activeFilter === "Kegiatan Sekolah" && item.topic === "Kegiatan Sekolah"));
+    // Fetch aspirations from API
+    useEffect(() => {
+        fetchAspirations();
+    }, []);
+
+    const fetchAspirations = async () => {
+        try {
+            const data = await api.get('/aspirations');
+            // Only show public aspirations (not private)
+            const publicAspirations = data.filter(a => !a.isPrivate);
+            // Use dummy data if API returns empty
+            setAspirations(publicAspirations.length > 0 ? publicAspirations : DUMMY_ASPIRATIONS);
+        } catch (error) {
+            console.error('Failed to fetch aspirations:', error);
+            // Fallback to dummy data on error
+            setAspirations(DUMMY_ASPIRATIONS);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const filteredAspirations = aspirations;
 
     // SMART RENDER LOGIC
     // If data is small (< 5), don't loop/marquee, just show grid to avoid redundancy.
@@ -185,9 +81,22 @@ export default function SuggestionPage() {
         }
     });
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        setTimeout(() => setSubmitted(true), 800);
+        setSubmitting(true);
+        try {
+            await api.post('/aspirations', {
+                sender: isAnonymous ? null : formData.sender,
+                message: formData.message
+            });
+            setSubmitted(true);
+            setFormData({ sender: '', message: '' });
+            fetchAspirations(); // Refresh the list
+        } catch (error) {
+            alert('Gagal mengirim aspirasi: ' + error.message);
+        } finally {
+            setSubmitting(false);
+        }
     };
 
     const toggleLike = (id) => {
@@ -265,39 +174,31 @@ export default function SuggestionPage() {
                                             type="text"
                                             required={!isAnonymous}
                                             disabled={isAnonymous}
+                                            value={isAnonymous ? '' : formData.sender}
+                                            onChange={e => setFormData({ ...formData, sender: e.target.value })}
                                             placeholder={isAnonymous ? "Identitas Disembunyikan" : "Nama / Kelas"}
                                             className="w-full bg-deep-navy/80 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-neon-gold transition-all"
                                         />
                                     </motion.div>
                                     <div className="space-y-2">
-                                        <label className="text-xs font-bold text-slate-400 uppercase ml-1">Topik</label>
-                                        <div className="relative">
-                                            <select className="w-full bg-deep-navy/80 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-neon-gold appearance-none cursor-pointer">
-                                                <option>Sarana & Prasarana</option>
-                                                <option>Program Kerja</option>
-                                                <option>Evaluasi Kegiatan</option>
-                                                <option>Lainnya</option>
-                                            </select>
-                                            <Filter className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" size={16} />
-                                        </div>
+                                        <label className="text-xs font-bold text-slate-400 uppercase ml-1">Pesan Aspirasi</label>
+                                        <textarea
+                                            required
+                                            rows={2}
+                                            value={formData.message}
+                                            onChange={e => setFormData({ ...formData, message: e.target.value })}
+                                            placeholder="Tulis aspirasi Anda di sini..."
+                                            className="w-full bg-deep-navy/80 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-neon-gold resize-none"
+                                        />
                                     </div>
-                                </div>
-
-                                <div className="space-y-2 mb-6">
-                                    <label className="text-xs font-bold text-slate-400 uppercase ml-1">Pesan</label>
-                                    <textarea
-                                        required
-                                        rows={2}
-                                        placeholder="Tulis aspirasi..."
-                                        className="w-full bg-deep-navy/80 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-neon-gold resize-none"
-                                    />
                                 </div>
 
                                 <button
                                     type="submit"
-                                    className="w-full py-3 bg-gradient-to-r from-neon-gold to-orange-500 rounded-xl text-deep-navy font-bold text-lg hover:shadow-[0_0_20px_rgba(255,215,0,0.3)] transition-all"
+                                    disabled={submitting}
+                                    className="w-full py-3 bg-gradient-to-r from-neon-gold to-orange-500 rounded-xl text-deep-navy font-bold text-lg hover:shadow-[0_0_20px_rgba(255,215,0,0.3)] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                                 >
-                                    Kirim
+                                    {submitting ? <><Loader2 className="w-5 h-5 animate-spin" /> Mengirim...</> : 'Kirim'}
                                 </button>
                             </form>
                         </div>
@@ -386,30 +287,42 @@ export default function SuggestionPage() {
 
 // Sub-component for Cleaner Code
 function AspirationCard({ item, toggleLike, likedPosts }) {
+    // Helper to format date
+    const formatDate = (dateStr) => {
+        if (!dateStr) return '';
+        const date = new Date(dateStr);
+        const now = new Date();
+        const diff = now - date;
+        const hours = Math.floor(diff / (1000 * 60 * 60));
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+
+        if (hours < 1) return 'Baru saja';
+        if (hours < 24) return `${hours} jam yang lalu`;
+        if (days < 7) return `${days} hari yang lalu`;
+        return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+    };
+
+    const senderName = item.sender || 'Anonim';
+    const isAnon = !item.sender || item.sender === 'Anonymous';
+
     return (
         <div className="w-[350px] flex-shrink-0 bg-navy-light/40 backdrop-blur-md border border-white/5 p-6 rounded-2xl hover:bg-navy-light/60 hover:border-white/20 transition-all group hover:scale-[1.02] select-none text-left h-full flex flex-col justify-between">
             <div>
                 <div className="flex justify-between items-start mb-4">
                     <div className="flex items-center gap-3">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold ${item.isAnonymous
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold ${isAnon
                             ? 'bg-slate-700 text-slate-400'
                             : 'bg-gradient-to-br from-blue-500 to-indigo-600 text-white'
                             }`}>
-                            {item.isAnonymous ? <User size={18} /> : item.name.charAt(0)}
+                            {isAnon ? <User size={18} /> : senderName.charAt(0).toUpperCase()}
                         </div>
                         <div>
                             <h4 className="text-white font-bold text-sm truncate max-w-[150px]">
-                                {item.name}
+                                {senderName}
                             </h4>
-                            <p className="text-slate-500 text-[10px]">{item.date}</p>
+                            <p className="text-slate-500 text-[10px]">{formatDate(item.createdAt)}</p>
                         </div>
                     </div>
-                    <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase border ${item.topic.includes("Sarana") ? 'text-orange-400 border-orange-500/20 bg-orange-500/10' :
-                        item.topic.includes("Program") ? 'text-blue-400 border-blue-500/20 bg-blue-500/10' :
-                            'text-slate-400 border-slate-500/20 bg-slate-500/10'
-                        }`}>
-                        {item.topic.split(" ")[0]}..
-                    </span>
                 </div>
 
                 <p className="text-slate-300 text-sm leading-relaxed mb-4 line-clamp-3 min-h-[60px]">
@@ -417,15 +330,7 @@ function AspirationCard({ item, toggleLike, likedPosts }) {
                 </p>
             </div>
 
-            <div className="flex items-center justify-between pt-4 border-t border-white/5 mt-auto">
-                <div className={`flex items-center gap-1.5 text-[10px] font-bold uppercase ${item.status === 'Selesai' ? 'text-green-400' :
-                    item.status === 'Diterima' ? 'text-blue-400' : 'text-yellow-500'
-                    }`}>
-                    <div className={`w-1.5 h-1.5 rounded-full ${item.status === 'Selesai' ? 'bg-green-400' :
-                        item.status === 'Diterima' ? 'bg-blue-400' : 'bg-yellow-500'
-                        }`} />
-                    {item.status}
-                </div>
+            <div className="flex items-center justify-end pt-4 border-t border-white/5 mt-auto">
                 <button
                     onClick={(e) => {
                         e.stopPropagation();
@@ -435,7 +340,7 @@ function AspirationCard({ item, toggleLike, likedPosts }) {
                         }`}
                 >
                     <ThumbsUp size={12} className={likedPosts.includes(item.id) ? 'fill-current' : ''} />
-                    {item.likes + (likedPosts.includes(item.id) ? 1 : 0)}
+                    {likedPosts.includes(item.id) ? 1 : 0}
                 </button>
             </div>
         </div>

@@ -1,20 +1,34 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SectionWrapper } from '../../components/ui/SectionWrapper';
 import { GlassCard } from '../../components/ui/GlassCard';
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock, MapPin } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock, MapPin, Loader2 } from 'lucide-react';
 import { getWeeksInMonth } from '../../utils/calendarUtils';
-
-const events = [
-    { id: 1, title: 'Rapat Pleno OSIS', date: '2025-12-20', time: '13:00', loc: 'Ruang OSIS', type: 'internal' },
-    { id: 2, title: 'Classmeeting Hari 1', date: '2025-12-15', time: '07:30', loc: 'Lapangan', type: 'public' },
-    { id: 3, title: 'Classmeeting Hari 2', date: '2025-12-16', time: '07:30', loc: 'Lapangan', type: 'public' },
-    { id: 4, title: 'Libur Semester', date: '2025-12-25', time: '-', loc: '-', type: 'holiday' },
-];
+import api from '../../services/api';
+import { DUMMY_EVENTS } from '../../data/calendarData';
 
 export default function CalendarPage() {
-    const [currentDate, setCurrentDate] = useState(new Date(2025, 11, 1)); // Dec 2025
+    const [currentDate, setCurrentDate] = useState(new Date());
+    const [events, setEvents] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchEvents = async () => {
+            try {
+                const data = await api.get('/calendar');
+                // Use dummy data if API returns empty
+                setEvents(data && data.length > 0 ? data : DUMMY_EVENTS);
+            } catch (error) {
+                console.error('Failed to fetch events:', error);
+                // Fallback to dummy data on error
+                setEvents(DUMMY_EVENTS);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchEvents();
+    }, []);
 
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth(); // 0-11
@@ -26,9 +40,19 @@ export default function CalendarPage() {
 
     const checkEvent = (day) => {
         if (!day) return null;
-        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-        return events.filter(e => e.date === dateStr);
+        return events.filter(e => {
+            const eventDate = new Date(e.date);
+            return eventDate.getFullYear() === year &&
+                eventDate.getMonth() === month &&
+                eventDate.getDate() === day;
+        });
     };
+
+    // Filter events for current month
+    const currentMonthEvents = events.filter(e => {
+        const eventDate = new Date(e.date);
+        return eventDate.getFullYear() === year && eventDate.getMonth() === month;
+    });
 
     return (
         <div className="min-h-screen container mx-auto px-6 py-24">
@@ -117,24 +141,24 @@ export default function CalendarPage() {
                         <h3 className="text-xl font-bold text-white mb-6 uppercase tracking-widest border-l-4 border-neon-gold pl-4">
                             Bulan Ini
                         </h3>
-                        {events.length > 0 ? (
+                        {loading ? (
+                            <div className="p-8 text-center border border-dashed border-white/10 rounded-xl">
+                                <Loader2 className="w-6 h-6 mx-auto text-neon-gold animate-spin mb-2" />
+                                <p className="text-slate-500">Memuat agenda...</p>
+                            </div>
+                        ) : currentMonthEvents.length > 0 ? (
                             <div className="space-y-4">
-                                {events.map((ev, idx) => (
-                                    <div key={idx} className="bg-navy-light/30 border border-white/5 p-4 rounded-xl flex gap-4 hover:border-white/20 transition-all group">
+                                {currentMonthEvents.map((ev, idx) => (
+                                    <div key={ev.id || idx} className="bg-navy-light/30 border border-white/5 p-4 rounded-xl flex gap-4 hover:border-white/20 transition-all group">
                                         <div className="flex flex-col items-center justify-center p-3 bg-deep-navy rounded-lg border border-white/10 min-w-[70px]">
                                             <span className="text-xs text-slate-500 uppercase font-bold">{monthNames[new Date(ev.date).getMonth()].substring(0, 3)}</span>
                                             <span className="text-2xl font-bold text-white">{new Date(ev.date).getDate()}</span>
                                         </div>
                                         <div>
                                             <h4 className="text-white font-bold mb-1 group-hover:text-neon-gold transition-colors">{ev.title}</h4>
-                                            <div className="space-y-1">
-                                                <div className="flex items-center gap-2 text-xs text-slate-400">
-                                                    <Clock size={12} /> {ev.time}
-                                                </div>
-                                                <div className="flex items-center gap-2 text-xs text-slate-400">
-                                                    <MapPin size={12} /> {ev.loc}
-                                                </div>
-                                            </div>
+                                            {ev.description && (
+                                                <p className="text-xs text-slate-400 line-clamp-2">{ev.description}</p>
+                                            )}
                                         </div>
                                     </div>
                                 ))}
