@@ -28,10 +28,11 @@ exports.login = async (req, res) => {
             expiresIn: '1d'
         });
 
-        // Send Cookie
+        // Send Cookie (sameSite: 'none' required for cross-origin)
         res.cookie('token', token, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
+            secure: true,  // Required when sameSite is 'none'
+            sameSite: 'none',  // Required for cross-origin (Vercel -> ngrok)
             maxAge: 24 * 60 * 60 * 1000 // 1 day
         });
 
