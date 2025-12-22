@@ -9,11 +9,15 @@ dotenv.config({ path: path.resolve(__dirname, '../.env') });
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware - CORS (allow all origins for development/ngrok)
-app.use(cors({
+// CORS Configuration
+const corsOptions = {
     origin: true,  // Allow ALL origins (for dev/ngrok - restrict in production)
     credentials: true
-}));
+};
+
+// Middleware - CORS (app.use already handles OPTIONS preflight)
+app.use(cors(corsOptions));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());

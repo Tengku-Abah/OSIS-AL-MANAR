@@ -29,10 +29,11 @@ exports.login = async (req, res) => {
         });
 
         // Send Cookie (sameSite: 'none' required for cross-origin)
+        const isProduction = process.env.NODE_ENV === 'production';
         res.cookie('token', token, {
             httpOnly: true,
-            secure: true,  // Required when sameSite is 'none'
-            sameSite: 'none',  // Required for cross-origin (Vercel -> ngrok)
+            secure: isProduction,  // true in production, false in dev
+            sameSite: isProduction ? 'none' : 'lax',  // 'none' for cross-origin in prod
             maxAge: 24 * 60 * 60 * 1000 // 1 day
         });
 
@@ -53,12 +54,10 @@ exports.logout = (req, res) => {
 };
 
 // Get Current User (Me)
-exports.getMe = async (req, res) => {
-    try {
-        // Token is verified in middleware, so we access user from req.user
-        const user = req.user;
-        res.json(user);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+exports.getMe = (req, res) => {
+    // Guard: check if user exists
+    if (!req.user) {
+        return res.status(401).json({ message: 'Unauthenticated' });
     }
+    res.json(req.user);
 };
