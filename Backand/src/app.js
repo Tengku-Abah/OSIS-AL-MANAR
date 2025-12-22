@@ -9,9 +9,12 @@ dotenv.config({ path: path.resolve(__dirname, '../.env') });
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// CORS Configuration
+// CORS Configuration - MUST be specific origins when using credentials
 const corsOptions = {
-    origin: true,  // Allow ALL origins (for dev/ngrok - restrict in production)
+    origin: [
+        'http://localhost:3000',
+        'https://osis-al-manar.vercel.app'
+    ],
     credentials: true
 };
 
