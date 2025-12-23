@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { GlassCard } from '../ui/GlassCard';
 import { GlowingButton } from '../ui/GlowingButton';
+import OptimizedImage from '../ui/OptimizedImage';
 import { Trash2, Eye, EyeOff, Upload, Plus } from 'lucide-react';
 import api, { getImageUrl } from '../../services/api';
 
@@ -179,10 +180,10 @@ export default function GalleryManager() {
                     {loading ? <p className="text-white">Loading gallery...</p> :
                         images.map(img => (
                             <div key={img.id} className="group relative aspect-square rounded-xl overflow-hidden border border-white/10 bg-navy-light">
-                                <img
+                                <OptimizedImage
                                     src={getImageUrl(img.image)}
                                     alt="Gallery"
-                                    className={`w-full h-full object-cover transition-transform group-hover:scale-110 ${!img.isActive && 'grayscale opacity-50'}`}
+                                    className={`w-full h-full ${!img.isActive && 'grayscale opacity-50'}`}
                                 />
                                 <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-3 p-4 text-center">
                                     <h4 className="text-white font-bold text-sm line-clamp-2">{img.title}</h4>

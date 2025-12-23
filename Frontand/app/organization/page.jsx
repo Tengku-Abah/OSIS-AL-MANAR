@@ -4,8 +4,9 @@ import React, { useState } from 'react';
 import { SectionWrapper } from '../../components/ui/SectionWrapper';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Instagram, Target, Users, X, Briefcase, ChevronRight, Info, Shield } from 'lucide-react';
+import OptimizedImage from '../../components/ui/OptimizedImage';
 
-import api, { getImageUrl } from '../../services/api';
+import api, { getImageUrl, getInitials } from '../../services/api';
 
 // --- HELPER CONSTANTS ---
 const DIVISION_INFO = {
@@ -27,17 +28,22 @@ const TeamCard = ({ member, onClick, isLarge = false }) => (
     `}
     >
         <div className={`
-        rounded-full bg-deep-navy border-2 border-white/10 flex items-center justify-center text-slate-300 font-bold mb-4
-        transition-transform duration-500 group-hover:scale-110 group-hover:border-white/30 group-hover:text-white
+        rounded-full border-2 flex items-center justify-center font-bold mb-4
+        transition-transform duration-500 group-hover:scale-110 group-hover:text-white
+        ${member.photo ? 'bg-deep-navy border-white/10 group-hover:border-white/30' : 'bg-slate-200 border-neon-gold/50 text-slate-800 group-hover:border-neon-gold'}
         ${isLarge ? 'w-24 h-24 text-3xl shadow-2xl' : 'w-16 h-16 text-lg shadow-lg'}
         relative overflow-hidden
     `}>
             {member.photo ? (
-                <img src={getImageUrl(member.photo)} alt={member.name} className="w-full h-full object-cover" />
+                <OptimizedImage
+                    src={getImageUrl(member.photo)}
+                    alt={member.name}
+                    className="w-full h-full rounded-full"
+                />
             ) : (
-                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-700 to-slate-800">
-                    {member.name ? member.name.charAt(0) : '?'}
-                </div>
+                <span className="font-heading tracking-wider">
+                    {getInitials(member.name)}
+                </span>
             )}
         </div>
 
@@ -361,8 +367,18 @@ export default function OrganizationPage() {
                             </button>
 
                             <div className="text-center">
-                                <div className="w-24 h-24 rounded-full bg-deep-navy border-2 border-white/10 mx-auto mb-6 flex items-center justify-center text-3xl font-bold text-white shadow-lg">
-                                    {selectedMember.name.charAt(0)}
+                                <div className={`w-24 h-24 rounded-full mx-auto mb-6 flex items-center justify-center text-3xl font-bold shadow-lg overflow-hidden
+                                    ${selectedMember.photo ? 'bg-deep-navy border-2 border-white/10' : 'bg-slate-200 border-2 border-neon-gold/50 text-slate-800'}
+                                `}>
+                                    {selectedMember.photo ? (
+                                        <OptimizedImage
+                                            src={getImageUrl(selectedMember.photo)}
+                                            alt={selectedMember.name}
+                                            className="w-full h-full rounded-full"
+                                        />
+                                    ) : (
+                                        <span className="font-heading tracking-wider">{getInitials(selectedMember.name)}</span>
+                                    )}
                                 </div>
                                 <h3 className="text-2xl font-bold text-white mb-1">{selectedMember.name}</h3>
                                 <p className="text-neon-gold text-sm font-bold uppercase tracking-widest mb-8">{selectedMember.position}</p>

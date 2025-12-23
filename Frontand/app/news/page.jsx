@@ -5,6 +5,7 @@ import { SectionWrapper } from '../../components/ui/SectionWrapper';
 import { Calendar, User, ArrowRight, Loader2, Newspaper } from 'lucide-react';
 import Link from 'next/link';
 import api, { getImageUrl } from '../../services/api';
+import OptimizedImage from '../../components/ui/OptimizedImage';
 import { DUMMY_NEWS } from '../../data/newsData';
 
 export default function NewsPage() {
@@ -67,11 +68,13 @@ export default function NewsPage() {
                                 <div className="relative rounded-3xl overflow-hidden bg-navy-light border border-white/5 aspect-[16/7] mb-12 group cursor-pointer">
                                     {/* Background Image */}
                                     {featuredNews.image && (
-                                        <img
-                                            src={getImageUrl(featuredNews.image)}
-                                            alt={featuredNews.title}
-                                            className="absolute inset-0 w-full h-full object-cover z-0"
-                                        />
+                                        <div className="absolute inset-0 z-0">
+                                            <OptimizedImage
+                                                src={getImageUrl(featuredNews.image)}
+                                                alt={featuredNews.title}
+                                                className="w-full h-full object-cover"
+                                            />
+                                        </div>
                                     )}
                                     <div className="absolute inset-0 bg-gradient-to-t from-deep-navy via-deep-navy/70 to-transparent z-10" />
 
@@ -100,7 +103,7 @@ export default function NewsPage() {
                                             {/* Image */}
                                             {item.image && (
                                                 <div className="aspect-video overflow-hidden">
-                                                    <img
+                                                    <OptimizedImage
                                                         src={getImageUrl(item.image)}
                                                         alt={item.title}
                                                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"

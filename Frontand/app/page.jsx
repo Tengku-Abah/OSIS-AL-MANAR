@@ -5,6 +5,7 @@ import { motion, useScroll, useTransform } from 'framer-motion';
 import { Rocket, Calendar, Users, ArrowRight, Star, Quote, ChevronRight, Trophy } from 'lucide-react';
 import { GlassCard } from '../components/ui/GlassCard';
 import { SectionWrapper } from '../components/ui/SectionWrapper';
+import OptimizedImage from '../components/ui/OptimizedImage';
 import Link from 'next/link';
 import Image from 'next/image'; // Assuming using Next image later, or just divs for now
 import api, { getImageUrl } from '../services/api';
@@ -104,10 +105,10 @@ export default function Home() {
                 {/* Hero Image from Backend atau Placeholder */}
                 <div className="absolute inset-0 bg-gradient-to-t from-deep-navy/80 to-transparent z-10" />
                 {heroData.eventImage ? (
-                  <img
+                  <OptimizedImage
                     src={getImageUrl(heroData.eventImage)}
                     alt={heroData.eventName || 'Hero Image'}
-                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                    className="absolute inset-0 w-full h-full"
                   />
                 ) : (
                   <Users className="w-32 h-32 text-slate-700 group-hover:scale-110 transition-transform duration-700" />

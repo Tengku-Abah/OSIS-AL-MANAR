@@ -1,26 +1,17 @@
 // API Configuration
-// IMPORTANT: Set NEXT_PUBLIC_API_URL in Vercel Environment Variables
+// IMPORTANT: Set NEXT_PUBLIC_API_URL in .env file
 // Format: https://your-backend-url.ngrok-free.dev/api
 
-// Get API Base URL - works in both SSR and Client
+// Get API Base URL - ALWAYS from environment variable
 const getApiBaseUrl = () => {
-    // First check if ENV is set (both server and client)
-    if (process.env.NEXT_PUBLIC_API_URL) {
-        return process.env.NEXT_PUBLIC_API_URL;
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
+    if (!apiUrl) {
+        console.error('❌ NEXT_PUBLIC_API_URL is not configured in .env file!');
+        return '';
     }
 
-    // Fallback for local development (client-side only)
-    if (typeof window !== 'undefined') {
-        if (window.location.hostname === 'localhost') {
-            return 'http://localhost:5000/api';
-        }
-        // If on Vercel but ENV not set, show error
-        console.error('❌ NEXT_PUBLIC_API_URL is not configured!');
-        console.error('Please set it in Vercel Dashboard → Settings → Environment Variables');
-    }
-
-    // Return empty string to prevent crashes, but API calls will fail
-    return '';
+    return apiUrl;
 };
 
 export const API_BASE_URL = getApiBaseUrl();
@@ -35,6 +26,33 @@ export const getImageUrl = (imagePath) => {
     }
     // Jika relative path, tambahkan SERVER_URL
     return `${SERVER_URL}${imagePath}`;
+};
+
+// Helper function untuk fetch gambar dengan ngrok header dan return blob URL
+// Gunakan ini untuk preview gambar di dashboard managers
+export const fetchImageAsBlob = async (imagePath) => {
+    try {
+        const imageUrl = getImageUrl(imagePath);
+        const response = await fetch(imageUrl, {
+            headers: { 'ngrok-skip-browser-warning': 'true' }
+        });
+        if (!response.ok) throw new Error('Failed to fetch image');
+        const blob = await response.blob();
+        return URL.createObjectURL(blob);
+    } catch (error) {
+        console.error('Error fetching image as blob:', error);
+        return null;
+    }
+};
+
+// Helper untuk generate inisial dari nama
+export const getInitials = (name) => {
+    if (!name) return '?';
+    const words = name.split(' ').filter(w => w.length > 0);
+    if (words.length >= 2) {
+        return (words[0].charAt(0) + words[1].charAt(0)).toUpperCase();
+    }
+    return words[0].charAt(0).toUpperCase();
 };
 
 // Common headers for all requests (includes ngrok-skip-browser-warning)

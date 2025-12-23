@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { GlassCard } from '../ui/GlassCard';
 import { GlowingButton } from '../ui/GlowingButton';
 import { Upload, Save, Loader } from 'lucide-react';
-import api from '../../services/api';
+import api, { fetchImageAsBlob } from '../../services/api';
 
 export default function HeroManager() {
     const [heroData, setHeroData] = useState({ eventName: '', eventImage: '' });
@@ -30,11 +30,11 @@ export default function HeroManager() {
             });
 
             if (heroInfo.eventImage) {
-                // Jika URL sudah lengkap (Google Drive), gunakan langsung
-                const imageUrl = heroInfo.eventImage.startsWith('http')
-                    ? heroInfo.eventImage
-                    : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}${heroInfo.eventImage}`;
-                setPreview(imageUrl);
+                // Fetch image dengan header yang benar menggunakan shared helper
+                const blobUrl = await fetchImageAsBlob(heroInfo.eventImage);
+                if (blobUrl) {
+                    setPreview(blobUrl);
+                }
             }
         } catch (error) {
             console.error('Error fetching hero:', error);

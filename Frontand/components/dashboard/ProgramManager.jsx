@@ -4,7 +4,8 @@ import { GlassCard } from '../ui/GlassCard';
 import { GlowingButton } from '../ui/GlowingButton';
 import { CustomSelect } from '../ui/CustomSelect';
 import { Plus, Trash2, Edit2, X, Upload, Eye, LayoutTemplate, FileText, Calendar } from 'lucide-react';
-import api, { getImageUrl } from '../../services/api';
+import api, { getImageUrl, fetchImageAsBlob } from '../../services/api';
+import OptimizedImage from '../ui/OptimizedImage';
 
 // --- CONSTANTS ---
 const DIVISIONS = [
@@ -96,7 +97,7 @@ export default function ProgramManager() {
 
     const [previewMode, setPreviewMode] = useState('CARD'); // 'CARD' or 'DETAIL'
 
-    const handleEdit = (program) => {
+    const handleEdit = async (program) => {
         setIsEditing(true);
         setEditId(program.id);
         setFormData({
@@ -107,7 +108,10 @@ export default function ProgramManager() {
             pic: program.pic || '',
             image: null
         });
-        if (program.image) setPreview(getImageUrl(program.image));
+        if (program.image) {
+            const blobUrl = await fetchImageAsBlob(program.image);
+            if (blobUrl) setPreview(blobUrl);
+        }
     };
 
     const handlePreviewDetail = (program) => {
@@ -360,13 +364,9 @@ export default function ProgramManager() {
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {programs.map(item => (
                                 <GlassCard key={item.id} className="p-4 flex gap-4 items-start group">
-                                    <img
+                                    <OptimizedImage
                                         src={getImageUrl(item.image)}
-                                        className="w-24 h-24 rounded-lg object-cover bg-navy-light flex-shrink-0"
-                                        onError={(e) => {
-                                            e.target.onerror = null; // Prevent infinite loop
-                                            e.target.src = '/placeholder.svg';
-                                        }}
+                                        className="w-24 h-24 rounded-lg bg-navy-light flex-shrink-0"
                                     />
                                     <div className="flex-1 min-w-0">
                                         <div className="flex justify-between items-start mb-1">

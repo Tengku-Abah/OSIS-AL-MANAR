@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { SectionWrapper } from '../../components/ui/SectionWrapper';
+import OptimizedImage from '../../components/ui/OptimizedImage';
 import { Image, Loader2 } from 'lucide-react';
 import api, { getImageUrl } from '../../services/api';
 import { DUMMY_GALLERY } from '../../data/galleryData';
@@ -65,11 +66,12 @@ export default function GalleryPage() {
                                 ${size === 'normal' ? 'md:row-span-2' : ''}
                             `}
                             >
-                                {/* Real Image from API */}
-                                <img
+                                {/* Optimized Image with lazy loading */}
+                                <OptimizedImage
                                     src={getImageUrl(item.image)}
                                     alt={item.title}
-                                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                                    className="absolute inset-0 w-full h-full"
+                                    style={{ transition: 'transform 0.7s' }}
                                 />
 
                                 {/* Overlay Info */}

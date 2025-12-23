@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { Calendar, User, ArrowLeft, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import api, { getImageUrl } from '../../../services/api';
+import OptimizedImage from '../../../components/ui/OptimizedImage';
 import { SectionWrapper } from '../../../components/ui/SectionWrapper';
 
 export default function NewsDetailPage() {
@@ -89,11 +90,10 @@ export default function NewsDetailPage() {
                     className="relative w-full aspect-video rounded-2xl overflow-hidden mb-8 border border-white/10"
                 >
                     {news.image ? (
-                        <img
+                        <OptimizedImage
                             src={getImageUrl(news.image)}
                             alt={news.title}
                             className="w-full h-full object-cover"
-                            onError={(e) => { e.target.onerror = null; e.target.src = '/placeholder.svg'; }}
                         />
                     ) : (
                         <div className="w-full h-full bg-gradient-to-br from-navy-light to-deep-navy flex items-center justify-center">

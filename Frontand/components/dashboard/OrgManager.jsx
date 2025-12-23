@@ -5,7 +5,8 @@ import { GlassCard } from '../ui/GlassCard';
 import { GlowingButton } from '../ui/GlowingButton';
 import { CustomSelect } from '../ui/CustomSelect';
 import { Plus, Trash2, Edit2, X, Upload } from 'lucide-react';
-import api, { getImageUrl } from '../../services/api';
+import api, { getImageUrl, fetchImageAsBlob, getInitials } from '../../services/api';
+import OptimizedImage from '../ui/OptimizedImage';
 
 export default function OrgManager() {
     const [members, setMembers] = useState([]);
@@ -67,7 +68,7 @@ export default function OrgManager() {
         }
     };
 
-    const handleEdit = (member) => {
+    const handleEdit = async (member) => {
         setIsEditing(true);
         setEditId(member.id);
         setFormData({
@@ -76,7 +77,10 @@ export default function OrgManager() {
             division: member.division,
             photo: null
         });
-        if (member.photo) setPreview(getImageUrl(member.photo));
+        if (member.photo) {
+            const blobUrl = await fetchImageAsBlob(member.photo);
+            if (blobUrl) setPreview(blobUrl);
+        }
     };
 
     const handleDelete = async (id) => {
@@ -150,11 +154,16 @@ export default function OrgManager() {
                             <label className="block text-xs text-slate-400 mb-2">Live Preview</label>
                             <div className="p-4 rounded-xl bg-navy-light/40 border border-white/5 flex items-center justify-between">
                                 <div className="flex items-center gap-4">
-                                    <img
-                                        src={preview || '/default-avatar.png'}
-                                        className="w-12 h-12 rounded-full object-cover border border-white/10"
-                                        onError={(e) => e.target.src = 'https://ui-avatars.com/api/?name=' + (formData.name || 'Member')}
-                                    />
+                                    {preview ? (
+                                        <img
+                                            src={preview}
+                                            className="w-12 h-12 rounded-full object-cover border border-white/10"
+                                        />
+                                    ) : (
+                                        <div className="w-12 h-12 rounded-full bg-slate-200 flex items-center justify-center text-slate-700 font-bold font-heading border border-white/10">
+                                            {getInitials(formData.name)}
+                                        </div>
+                                    )}
                                     <div>
                                         <h4 className="text-white font-bold">{formData.name || 'Member Name'}</h4>
                                         <p className="text-neon-gold text-xs">{formData.position || 'Position'} • {formData.division || 'Division'}</p>
@@ -184,10 +193,9 @@ export default function OrgManager() {
                         members.map(member => (
                             <GlassCard key={member.id} className="p-4 flex items-center justify-between group">
                                 <div className="flex items-center gap-4">
-                                    <img
+                                    <OptimizedImage
                                         src={getImageUrl(member.photo)}
-                                        className="w-12 h-12 rounded-full object-cover border border-white/10"
-                                        onError={(e) => e.target.src = 'https://ui-avatars.com/api/?name=' + member.name}
+                                        className="w-12 h-12 rounded-full border border-white/10"
                                     />
                                     <div>
                                         <h4 className="text-white font-bold">{member.name}</h4>

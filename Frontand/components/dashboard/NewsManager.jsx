@@ -5,7 +5,8 @@ import { GlassCard } from '../ui/GlassCard';
 import { GlowingButton } from '../ui/GlowingButton';
 import { CustomSelect } from '../ui/CustomSelect';
 import { Plus, Trash2, Edit2, X, Upload, Eye, LayoutTemplate, FileText } from 'lucide-react';
-import api, { getImageUrl } from '../../services/api';
+import api, { getImageUrl, fetchImageAsBlob } from '../../services/api';
+import OptimizedImage from '../ui/OptimizedImage';
 
 export default function NewsManager() {
     const [news, setNews] = useState([]);
@@ -70,7 +71,7 @@ export default function NewsManager() {
         }
     };
 
-    const handleEdit = (item) => {
+    const handleEdit = async (item) => {
         setIsEditing(true);
         setEditId(item.id);
         setFormData({
@@ -79,7 +80,10 @@ export default function NewsManager() {
             category: item.category,
             image: null
         });
-        if (item.image) setPreview(getImageUrl(item.image));
+        if (item.image) {
+            const blobUrl = await fetchImageAsBlob(item.image);
+            if (blobUrl) setPreview(blobUrl);
+        }
     };
 
     const handlePreviewDetail = (item) => {
@@ -261,10 +265,9 @@ export default function NewsManager() {
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {news.map(item => (
                                 <GlassCard key={item.id} className="p-4 flex gap-4 items-start group">
-                                    <img
+                                    <OptimizedImage
                                         src={getImageUrl(item.image)}
-                                        className="w-24 h-24 rounded-lg object-cover bg-navy-light flex-shrink-0"
-                                        onError={(e) => { e.target.onerror = null; e.target.src = '/placeholder.svg'; }}
+                                        className="w-24 h-24 rounded-lg bg-navy-light flex-shrink-0"
                                     />
                                     <div className="flex-1 min-w-0">
                                         <div className="flex justify-between items-start mb-1">
