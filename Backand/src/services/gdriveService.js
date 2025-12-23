@@ -2,13 +2,18 @@ const { google } = require('googleapis');
 const path = require('path');
 const fs = require('fs');
 
-// Auth dengan Service Account
-const auth = new google.auth.GoogleAuth({
-    keyFile: path.join(__dirname, '../../service-account-key.json'),
-    scopes: ['https://www.googleapis.com/auth/drive']
+// Auth dengan OAuth2 (menggunakan refresh token)
+const oauth2Client = new google.auth.OAuth2(
+    process.env.GOOGLE_CLIENT_ID,
+    process.env.GOOGLE_CLIENT_SECRET,
+    process.env.GOOGLE_REDIRECT_URI
+);
+
+oauth2Client.setCredentials({
+    refresh_token: process.env.GOOGLE_REFRESH_TOKEN
 });
 
-const drive = google.drive({ version: 'v3', auth });
+const drive = google.drive({ version: 'v3', auth: oauth2Client });
 
 /**
  * Mapping category -> folder ID dari environment variables
@@ -56,7 +61,8 @@ async function uploadFile(fileObject, category) {
                 mimeType: fileObject.mimetype,
                 body: fs.createReadStream(fileObject.path)
             },
-            fields: 'id, name, mimeType, webViewLink, webContentLink'
+            fields: 'id, name, mimeType, webViewLink, webContentLink',
+            supportsAllDrives: true
         });
 
         // Set permission agar file bisa diakses publik
@@ -65,13 +71,23 @@ async function uploadFile(fileObject, category) {
             requestBody: {
                 role: 'reader',
                 type: 'anyone'
-            }
+            },
+            supportsAllDrives: true
         });
 
         // Hapus file temporary dari server
         fs.unlinkSync(fileObject.path);
 
-        return response.data;
+        // Generate embeddable URL menggunakan proxy backend
+        // Ini lebih reliable daripada akses langsung ke Google Drive
+        const fileId = response.data.id;
+        const embedLink = `/api/image/${fileId}`;
+
+        return {
+            ...response.data,
+            embedLink, // URL yang bisa langsung dipakai di <img src="">
+            webViewLink: response.data.webViewLink
+        };
     } catch (error) {
         // Hapus file temp jika upload gagal
         if (fs.existsSync(fileObject.path)) {
@@ -86,7 +102,33 @@ async function uploadFile(fileObject, category) {
  * @param {string} fileId - Google Drive file ID
  */
 async function deleteFile(fileId) {
-    await drive.files.delete({ fileId });
+    try {
+        await drive.files.delete({
+            fileId,
+            supportsAllDrives: true
+        });
+    } catch (error) {
+        console.error('Error deleting file from Drive:', error);
+        throw error;
+    }
 }
 
-module.exports = { uploadFile, deleteFile, getFolderId };
+// Fungsi test list files untuk debugging permission
+async function listFilesTest(folderId) {
+    try {
+        const res = await drive.files.list({
+            q: `'${folderId}' in parents`,
+            fields: 'files(id, name)',
+            supportsAllDrives: true,
+            includeItemsFromAllDrives: true,
+            pageSize: 5
+        });
+        console.log('Files in folder:', res.data.files);
+        return res.data.files;
+    } catch (error) {
+        console.error('Error listing files:', error);
+        throw error;
+    }
+}
+
+module.exports = { uploadFile, deleteFile, getFolderId, listFilesTest };

@@ -20,7 +20,7 @@ exports.createMember = async (req, res) => {
         if (req.file) {
             console.log('Uploading member photo to Google Drive (category: panitia)...');
             const driveResult = await uploadFile(req.file, 'panitia');
-            photo = driveResult.webViewLink;
+            photo = driveResult.embedLink;
         }
 
         const query = `
@@ -53,7 +53,7 @@ exports.updateMember = async (req, res) => {
         if (req.file) {
             console.log('Uploading new member photo to Google Drive (category: panitia)...');
             const driveResult = await uploadFile(req.file, 'panitia');
-            photo = driveResult.webViewLink;
+            photo = driveResult.embedLink;
 
             // Note: Kita tidak menghapus file lama di Drive karena kita hanya menyimpan URL di DB.
             // Jika ingin menghapus, kita harus parse ID dari URL member.photo lama.

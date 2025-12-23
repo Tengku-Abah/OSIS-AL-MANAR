@@ -41,7 +41,7 @@ const updateHeroSettings = async (req, res) => {
         if (req.file) {
             console.log('Uploading hero image to Google Drive (category: main)...');
             const driveResult = await uploadFile(req.file, 'main');
-            imageUrl = driveResult.webViewLink; // Gunakan view link untuk ditampilkan
+            imageUrl = driveResult.embedLink; // URL yang bisa langsung ditampilkan
         }
 
         // Cari record hero yang ada

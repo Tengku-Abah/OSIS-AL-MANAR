@@ -18,7 +18,7 @@ exports.uploadGalleryItem = async (req, res) => {
         if (req.file) {
             console.log('Uploading gallery image to Google Drive (category: galeri)...');
             const driveResult = await uploadFile(req.file, 'galeri');
-            image = driveResult.webViewLink;
+            image = driveResult.embedLink;
         }
 
         if (!image) {

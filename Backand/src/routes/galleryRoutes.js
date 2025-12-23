@@ -5,7 +5,7 @@ const upload = require('../middlewares/upload');
 
 router.get('/', galleryController.getAllGalleryItems);
 router.post('/', upload.single('image'), galleryController.uploadGalleryItem);
-router.patch('/:id/status', galleryController.toggleGalleryStatus);
+router.put('/:id/status', galleryController.toggleGalleryStatus);
 router.delete('/:id', galleryController.deleteGalleryItem);
 
 module.exports = router;

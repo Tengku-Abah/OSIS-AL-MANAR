@@ -18,7 +18,7 @@ exports.createProgram = async (req, res) => {
         if (req.file) {
             console.log('Uploading program image to Google Drive (category: proker)...');
             const driveResult = await uploadFile(req.file, 'proker');
-            image = driveResult.webViewLink;
+            image = driveResult.embedLink;
         }
 
         const query = `
@@ -47,7 +47,7 @@ exports.updateProgram = async (req, res) => {
         if (req.file) {
             console.log('Uploading new program image to Google Drive (category: proker)...');
             const driveResult = await uploadFile(req.file, 'proker');
-            image = driveResult.webViewLink;
+            image = driveResult.embedLink;
 
             // Note: Tidak menghapus file lama di Drive karena hanya menyimpan URL
         }
