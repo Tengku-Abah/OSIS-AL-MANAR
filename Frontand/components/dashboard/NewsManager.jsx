@@ -5,7 +5,7 @@ import { GlassCard } from '../ui/GlassCard';
 import { GlowingButton } from '../ui/GlowingButton';
 import { CustomSelect } from '../ui/CustomSelect';
 import { Plus, Trash2, Edit2, X, Upload, Eye, LayoutTemplate, FileText } from 'lucide-react';
-import api, { SERVER_URL } from '../../services/api';
+import api, { getImageUrl } from '../../services/api';
 
 export default function NewsManager() {
     const [news, setNews] = useState([]);
@@ -79,7 +79,7 @@ export default function NewsManager() {
             category: item.category,
             image: null
         });
-        if (item.image) setPreview(`${SERVER_URL}${item.image}`);
+        if (item.image) setPreview(getImageUrl(item.image));
     };
 
     const handlePreviewDetail = (item) => {
@@ -192,7 +192,7 @@ export default function NewsManager() {
                                 <img
                                     src={preview || '/default-news.png'}
                                     className="w-full h-full object-cover bg-navy-light"
-                                    onError={(e) => e.target.src = 'https://via.placeholder.com/300x200'}
+                                    onError={(e) => { e.target.onerror = null; e.target.src = '/placeholder.svg'; }}
                                 />
                                 <div className="absolute top-2 right-2 flex gap-1">
                                     <span className={`text-[10px] px-2 py-1 rounded font-bold backdrop-blur-md shadow-sm bg-neon-gold text-deep-navy border border-white/20`}>
@@ -213,7 +213,7 @@ export default function NewsManager() {
                                 <img
                                     src={preview || '/default-news.png'}
                                     className="w-full h-full object-cover"
-                                    onError={(e) => e.target.src = 'https://via.placeholder.com/300x200'}
+                                    onError={(e) => { e.target.onerror = null; e.target.src = '/placeholder.svg'; }}
                                 />
                                 <div className="absolute bottom-4 left-4 z-20">
                                     <span className="text-[10px] font-bold text-deep-navy bg-neon-gold px-2 py-0.5 rounded uppercase mb-2 inline-block">
@@ -262,9 +262,9 @@ export default function NewsManager() {
                             {news.map(item => (
                                 <GlassCard key={item.id} className="p-4 flex gap-4 items-start group">
                                     <img
-                                        src={item.image ? `${SERVER_URL}${item.image}` : '/default-news.png'}
+                                        src={getImageUrl(item.image)}
                                         className="w-24 h-24 rounded-lg object-cover bg-navy-light flex-shrink-0"
-                                        onError={(e) => e.target.src = 'https://via.placeholder.com/150'}
+                                        onError={(e) => { e.target.onerror = null; e.target.src = '/placeholder.svg'; }}
                                     />
                                     <div className="flex-1 min-w-0">
                                         <div className="flex justify-between items-start mb-1">

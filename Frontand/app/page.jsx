@@ -1,16 +1,37 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { Rocket, Calendar, Users, ArrowRight, Star, Quote, ChevronRight, Trophy } from 'lucide-react';
 import { GlassCard } from '../components/ui/GlassCard';
 import { SectionWrapper } from '../components/ui/SectionWrapper';
 import Link from 'next/link';
 import Image from 'next/image'; // Assuming using Next image later, or just divs for now
+import api, { getImageUrl } from '../services/api';
 
 export default function Home() {
   const { scrollY } = useScroll();
   const heroY = useTransform(scrollY, [0, 500], [0, 100]);
+
+  // State untuk Hero Section data dari backend
+  const [heroData, setHeroData] = useState({ eventName: '', eventImage: '' });
+
+  useEffect(() => {
+    const fetchHeroData = async () => {
+      try {
+        const response = await api.get('/hero');
+        if (response.data) {
+          setHeroData(response.data);
+        } else if (response.eventName) {
+          // API mungkin langsung return object tanpa wrapper
+          setHeroData(response);
+        }
+      } catch (error) {
+        console.error('Error fetching hero data:', error);
+      }
+    };
+    fetchHeroData();
+  }, []);
 
   return (
     <div className="min-h-screen overflow-hidden">
@@ -72,7 +93,7 @@ export default function Home() {
             </div>
           </motion.div>
 
-          {/* Right: Featured Visual / Chairman */}
+          {/* Right: Featured Visual / Hero Image from Backend */}
           <motion.div
             style={{ y: heroY }}
             className="relative hidden lg:block"
@@ -80,11 +101,19 @@ export default function Home() {
             {/* Decorative Frame */}
             <div className="relative z-10 p-2 bg-gradient-to-br from-white/10 to-transparent rounded-2xl backdrop-blur-sm border border-white/10">
               <div className="bg-navy-light rounded-xl overflow-hidden aspect-[4/3] relative flex items-center justify-center group">
-                {/* Placeholder for Hero Image */}
+                {/* Hero Image from Backend atau Placeholder */}
                 <div className="absolute inset-0 bg-gradient-to-t from-deep-navy/80 to-transparent z-10" />
-                <Users className="w-32 h-32 text-slate-700 group-hover:scale-110 transition-transform duration-700" />
+                {heroData.eventImage ? (
+                  <img
+                    src={getImageUrl(heroData.eventImage)}
+                    alt={heroData.eventName || 'Hero Image'}
+                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                  />
+                ) : (
+                  <Users className="w-32 h-32 text-slate-700 group-hover:scale-110 transition-transform duration-700" />
+                )}
 
-                {/* Floating Card */}
+                {/* Floating Card - Menampilkan eventName dari backend */}
                 <div className="absolute bottom-6 left-6 right-6 z-20">
                   <GlassCard className="p-4" hoverEffect>
                     <div className="flex items-center gap-4">
@@ -92,8 +121,8 @@ export default function Home() {
                         <Trophy className="w-6 h-6 text-neon-gold" />
                       </div>
                       <div>
-                        <h4 className="text-white font-bold">Prestasi Terbaru</h4>
-                        <p className="text-sm text-slate-400">Juara Umum LKS Tingkat Provinsi 2025</p>
+                        <h4 className="text-white font-bold">{heroData.eventName || 'Event Terbaru'}</h4>
+                        <p className="text-sm text-slate-400">Informasi Tentang Al-Manar</p>
                       </div>
                     </div>
                   </GlassCard>

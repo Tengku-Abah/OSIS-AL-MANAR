@@ -4,7 +4,7 @@ import { GlassCard } from '../ui/GlassCard';
 import { GlowingButton } from '../ui/GlowingButton';
 import { CustomSelect } from '../ui/CustomSelect';
 import { Plus, Trash2, Edit2, X, Upload, Eye, LayoutTemplate, FileText, Calendar } from 'lucide-react';
-import api from '../../services/api';
+import api, { getImageUrl } from '../../services/api';
 
 // --- CONSTANTS ---
 const DIVISIONS = [
@@ -107,7 +107,7 @@ export default function ProgramManager() {
             pic: program.pic || '',
             image: null
         });
-        if (program.image) setPreview(`${SERVER_URL}${program.image}`);
+        if (program.image) setPreview(getImageUrl(program.image));
     };
 
     const handlePreviewDetail = (program) => {
@@ -264,7 +264,7 @@ export default function ProgramManager() {
                                 <img
                                     src={preview || '/default-image.png'}
                                     className="w-full h-full object-cover bg-navy-light"
-                                    onError={(e) => e.target.src = 'https://via.placeholder.com/300x200'}
+                                    onError={(e) => { e.target.onerror = null; e.target.src = '/placeholder.svg'; }}
                                 />
                                 <div className="absolute top-2 right-2">
                                     <span className={`text-[10px] px-2 py-1 rounded font-bold backdrop-blur-md shadow-sm ${getStatusColor(formData.status)}`}>
@@ -289,7 +289,7 @@ export default function ProgramManager() {
                                 <img
                                     src={preview || '/default-image.png'}
                                     className="w-full h-full object-cover"
-                                    onError={(e) => e.target.src = 'https://via.placeholder.com/600x400'}
+                                    onError={(e) => { e.target.onerror = null; e.target.src = '/placeholder.svg'; }}
                                 />
                                 <div className="absolute bottom-6 left-6 z-20">
                                     <h1 className="text-4xl font-bold text-white mb-3 font-heading tracking-tight drop-shadow-lg">
@@ -361,9 +361,12 @@ export default function ProgramManager() {
                             {programs.map(item => (
                                 <GlassCard key={item.id} className="p-4 flex gap-4 items-start group">
                                     <img
-                                        src={item.image ? `${SERVER_URL}${item.image}` : '/default-image.png'}
+                                        src={getImageUrl(item.image)}
                                         className="w-24 h-24 rounded-lg object-cover bg-navy-light flex-shrink-0"
-                                        onError={(e) => e.target.src = 'https://via.placeholder.com/150'}
+                                        onError={(e) => {
+                                            e.target.onerror = null; // Prevent infinite loop
+                                            e.target.src = '/placeholder.svg';
+                                        }}
                                     />
                                     <div className="flex-1 min-w-0">
                                         <div className="flex justify-between items-start mb-1">

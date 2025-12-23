@@ -26,6 +26,17 @@ const getApiBaseUrl = () => {
 export const API_BASE_URL = getApiBaseUrl();
 export const SERVER_URL = API_BASE_URL ? API_BASE_URL.replace('/api', '') : '';
 
+// Helper function untuk handle URL gambar (support Google Drive dan local uploads)
+export const getImageUrl = (imagePath) => {
+    if (!imagePath) return '/default-image.png';
+    // Jika URL sudah lengkap (Google Drive atau URL eksternal), gunakan langsung
+    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+        return imagePath;
+    }
+    // Jika relative path, tambahkan SERVER_URL
+    return `${SERVER_URL}${imagePath}`;
+};
+
 // Common headers for all requests (includes ngrok-skip-browser-warning)
 const getHeaders = (includeContentType = true) => {
     const headers = {

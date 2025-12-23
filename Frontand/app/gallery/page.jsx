@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { SectionWrapper } from '../../components/ui/SectionWrapper';
 import { Image, Loader2 } from 'lucide-react';
-import api, { SERVER_URL } from '../../services/api';
+import api, { getImageUrl } from '../../services/api';
 import { DUMMY_GALLERY } from '../../data/galleryData';
 
 export default function GalleryPage() {
@@ -67,7 +67,7 @@ export default function GalleryPage() {
                             >
                                 {/* Real Image from API */}
                                 <img
-                                    src={`${SERVER_URL}${item.image}`}
+                                    src={getImageUrl(item.image)}
                                     alt={item.title}
                                     className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                                 />

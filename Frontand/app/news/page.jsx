@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { SectionWrapper } from '../../components/ui/SectionWrapper';
 import { Calendar, User, ArrowRight, Loader2, Newspaper } from 'lucide-react';
 import Link from 'next/link';
-import api, { SERVER_URL } from '../../services/api';
+import api, { getImageUrl } from '../../services/api';
 import { DUMMY_NEWS } from '../../data/newsData';
 
 export default function NewsPage() {
@@ -63,28 +63,30 @@ export default function NewsPage() {
                     {/* Featured News */}
                     {featuredNews && (
                         <SectionWrapper delay={0.1}>
-                            <div className="relative rounded-3xl overflow-hidden bg-navy-light border border-white/5 aspect-[16/7] mb-12 group cursor-pointer">
-                                {/* Background Image */}
-                                {featuredNews.image && (
-                                    <img
-                                        src={`${SERVER_URL}${featuredNews.image}`}
-                                        alt={featuredNews.title}
-                                        className="absolute inset-0 w-full h-full object-cover z-0"
-                                    />
-                                )}
-                                <div className="absolute inset-0 bg-gradient-to-t from-deep-navy via-deep-navy/70 to-transparent z-10" />
+                            <Link href={`/news/${featuredNews.id}`}>
+                                <div className="relative rounded-3xl overflow-hidden bg-navy-light border border-white/5 aspect-[16/7] mb-12 group cursor-pointer">
+                                    {/* Background Image */}
+                                    {featuredNews.image && (
+                                        <img
+                                            src={getImageUrl(featuredNews.image)}
+                                            alt={featuredNews.title}
+                                            className="absolute inset-0 w-full h-full object-cover z-0"
+                                        />
+                                    )}
+                                    <div className="absolute inset-0 bg-gradient-to-t from-deep-navy via-deep-navy/70 to-transparent z-10" />
 
-                                <div className="absolute bottom-0 left-0 p-8 md:p-12 z-20 max-w-3xl">
-                                    <span className="bg-neon-gold text-deep-navy px-3 py-1 rounded text-xs font-bold uppercase mb-4 inline-block">Featured</span>
-                                    <h2 className="text-3xl md:text-5xl font-bold text-white mb-4 group-hover:text-blue-400 transition-colors">
-                                        {featuredNews.title}
-                                    </h2>
-                                    <div className="flex items-center gap-6 text-slate-300 text-sm">
-                                        <span className="flex items-center gap-2"><Calendar size={14} /> {formatDate(featuredNews.createdAt)}</span>
-                                        <span className="flex items-center gap-2"><User size={14} /> Admin OSIS</span>
+                                    <div className="absolute bottom-0 left-0 p-8 md:p-12 z-20 max-w-3xl">
+                                        <span className="bg-neon-gold text-deep-navy px-3 py-1 rounded text-xs font-bold uppercase mb-4 inline-block">Featured</span>
+                                        <h2 className="text-3xl md:text-5xl font-bold text-white mb-4 group-hover:text-blue-400 transition-colors">
+                                            {featuredNews.title}
+                                        </h2>
+                                        <div className="flex items-center gap-6 text-slate-300 text-sm">
+                                            <span className="flex items-center gap-2"><Calendar size={14} /> {formatDate(featuredNews.createdAt)}</span>
+                                            <span className="flex items-center gap-2"><User size={14} /> Admin OSIS</span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            </Link>
                         </SectionWrapper>
                     )}
 
@@ -93,30 +95,32 @@ export default function NewsPage() {
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                             {restNews.map((item, idx) => (
                                 <SectionWrapper key={item.id} delay={0.2 + idx * 0.1}>
-                                    <div className="group bg-navy-light/30 border border-white/5 rounded-2xl overflow-hidden hover:border-white/20 transition-all hover:-translate-y-1">
-                                        {/* Image */}
-                                        {item.image && (
-                                            <div className="aspect-video overflow-hidden">
-                                                <img
-                                                    src={`${SERVER_URL}${item.image}`}
-                                                    alt={item.title}
-                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                                />
+                                    <Link href={`/news/${item.id}`}>
+                                        <div className="group bg-navy-light/30 border border-white/5 rounded-2xl overflow-hidden hover:border-white/20 transition-all hover:-translate-y-1 cursor-pointer">
+                                            {/* Image */}
+                                            {item.image && (
+                                                <div className="aspect-video overflow-hidden">
+                                                    <img
+                                                        src={getImageUrl(item.image)}
+                                                        alt={item.title}
+                                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                                    />
+                                                </div>
+                                            )}
+                                            <div className="p-6">
+                                                <div className="flex items-center justify-between mb-4">
+                                                    <span className="text-xs font-bold text-neon-gold uppercase tracking-wider">Berita</span>
+                                                    <span className="text-xs text-slate-500">{formatDate(item.createdAt)}</span>
+                                                </div>
+                                                <h3 className="text-xl font-bold text-white mb-3 group-hover:text-blue-400 transition-colors line-clamp-2">
+                                                    {item.title}
+                                                </h3>
+                                                <p className="text-slate-400 text-sm mb-6 line-clamp-3">
+                                                    {item.content}
+                                                </p>
                                             </div>
-                                        )}
-                                        <div className="p-6">
-                                            <div className="flex items-center justify-between mb-4">
-                                                <span className="text-xs font-bold text-neon-gold uppercase tracking-wider">Berita</span>
-                                                <span className="text-xs text-slate-500">{formatDate(item.createdAt)}</span>
-                                            </div>
-                                            <h3 className="text-xl font-bold text-white mb-3 group-hover:text-blue-400 transition-colors line-clamp-2">
-                                                {item.title}
-                                            </h3>
-                                            <p className="text-slate-400 text-sm mb-6 line-clamp-3">
-                                                {item.content}
-                                            </p>
                                         </div>
-                                    </div>
+                                    </Link>
                                 </SectionWrapper>
                             ))}
                         </div>

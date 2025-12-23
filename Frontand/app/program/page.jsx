@@ -5,7 +5,7 @@ import { SectionWrapper } from '../../components/ui/SectionWrapper';
 import { GlassCard } from '../../components/ui/GlassCard';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, ChevronLeft, ArrowRight, Target, Users, Heart, Crown, Loader2, Briefcase, BookOpen } from 'lucide-react';
-import api, { SERVER_URL } from '../../services/api';
+import api, { getImageUrl } from '../../services/api';
 import { DUMMY_PROGRAMS } from '../../data/programsData';
 
 // Division icon and color mapping
@@ -212,7 +212,7 @@ export default function ProgramPage() {
                                             {/* Program Image */}
                                             <div className="w-full h-40 mb-4 bg-black/20 rounded-xl overflow-hidden flex items-center justify-center border border-white/5 group-hover:border-white/10 transition-colors">
                                                 {prog.image ? (
-                                                    <img src={`${SERVER_URL}${prog.image}`} alt={prog.title} className="w-full h-full object-cover" />
+                                                    <img src={getImageUrl(prog.image)} alt={prog.title} className="w-full h-full object-cover" />
                                                 ) : (
                                                     <div className="text-slate-600 flex flex-col items-center">
                                                         <Target size={32} className="mb-2 opacity-50" />
@@ -265,7 +265,7 @@ export default function ProgramPage() {
                                 {/* Large Program Image Banner */}
                                 <div className="w-full h-64 md:h-80 bg-black/40 relative group overflow-hidden">
                                     {selectedProgram.image ? (
-                                        <img src={`${SERVER_URL}${selectedProgram.image}`} alt={selectedProgram.title} className="w-full h-full object-cover" />
+                                        <img src={getImageUrl(selectedProgram.image)} alt={selectedProgram.title} className="w-full h-full object-cover" />
                                     ) : (
                                         <div className="w-full h-full flex flex-col items-center justify-center text-slate-500">
                                             <Target size={64} className="mb-4 opacity-20" />

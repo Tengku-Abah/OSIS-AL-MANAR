@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { GlassCard } from '../ui/GlassCard';
 import { GlowingButton } from '../ui/GlowingButton';
 import { Trash2, Eye, EyeOff, Upload, Plus } from 'lucide-react';
-import api from '../../services/api';
+import api, { getImageUrl } from '../../services/api';
 
 export default function GalleryManager() {
     const [images, setImages] = useState([]);
@@ -180,7 +180,7 @@ export default function GalleryManager() {
                         images.map(img => (
                             <div key={img.id} className="group relative aspect-square rounded-xl overflow-hidden border border-white/10 bg-navy-light">
                                 <img
-                                    src={`${SERVER_URL}${img.imageUrl}`}
+                                    src={getImageUrl(img.image)}
                                     alt="Gallery"
                                     className={`w-full h-full object-cover transition-transform group-hover:scale-110 ${!img.isActive && 'grayscale opacity-50'}`}
                                 />

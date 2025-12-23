@@ -19,13 +19,25 @@ export default function HeroManager() {
 
     const fetchHero = async () => {
         try {
-            const data = await api.get('/hero');
-            setHeroData(data);
-            if (data.eventImage) {
-                setPreview(`${SERVER_URL}${data.eventImage}`);
+            const response = await api.get('/hero');
+            // Handle both wrapped and unwrapped response
+            const heroInfo = response.data || response;
+            console.log('Hero data loaded:', heroInfo);
+
+            setHeroData({
+                eventName: heroInfo.eventName || '',
+                eventImage: heroInfo.eventImage || ''
+            });
+
+            if (heroInfo.eventImage) {
+                // Jika URL sudah lengkap (Google Drive), gunakan langsung
+                const imageUrl = heroInfo.eventImage.startsWith('http')
+                    ? heroInfo.eventImage
+                    : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}${heroInfo.eventImage}`;
+                setPreview(imageUrl);
             }
         } catch (error) {
-            console.error(error);
+            console.error('Error fetching hero:', error);
         } finally {
             setLoading(false);
         }
@@ -79,7 +91,7 @@ export default function HeroManager() {
                     <div>
                         <label className="block text-sm font-bold text-white mb-2">Event Banner / Hero Image</label>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="border-2 border-dashed border-white/20 rounded-xl p-8 flex flex-col items-center justify-center text-center hover:bg-white/5 transition-colors relative">
+                            <div className="border-2 border-dashed border-white/20 rounded-xl p-4 flex flex-col items-center justify-center text-center hover:bg-white/5 transition-colors relative overflow-hidden">
                                 <input
                                     type="file"
                                     onChange={handleImageChange}

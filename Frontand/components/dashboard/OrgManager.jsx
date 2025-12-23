@@ -5,7 +5,7 @@ import { GlassCard } from '../ui/GlassCard';
 import { GlowingButton } from '../ui/GlowingButton';
 import { CustomSelect } from '../ui/CustomSelect';
 import { Plus, Trash2, Edit2, X, Upload } from 'lucide-react';
-import api from '../../services/api';
+import api, { getImageUrl } from '../../services/api';
 
 export default function OrgManager() {
     const [members, setMembers] = useState([]);
@@ -76,7 +76,7 @@ export default function OrgManager() {
             division: member.division,
             photo: null
         });
-        if (member.photo) setPreview(`${SERVER_URL}${member.photo}`);
+        if (member.photo) setPreview(getImageUrl(member.photo));
     };
 
     const handleDelete = async (id) => {
@@ -185,7 +185,7 @@ export default function OrgManager() {
                             <GlassCard key={member.id} className="p-4 flex items-center justify-between group">
                                 <div className="flex items-center gap-4">
                                     <img
-                                        src={member.photo ? `${SERVER_URL}${member.photo}` : '/default-avatar.png'}
+                                        src={getImageUrl(member.photo)}
                                         className="w-12 h-12 rounded-full object-cover border border-white/10"
                                         onError={(e) => e.target.src = 'https://ui-avatars.com/api/?name=' + member.name}
                                     />

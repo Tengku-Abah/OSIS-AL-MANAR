@@ -5,7 +5,7 @@ import { SectionWrapper } from '../../components/ui/SectionWrapper';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Instagram, Target, Users, X, Briefcase, ChevronRight, Info, Shield } from 'lucide-react';
 
-import api from '../../services/api';
+import api, { getImageUrl } from '../../services/api';
 
 // --- HELPER CONSTANTS ---
 const DIVISION_INFO = {
@@ -33,7 +33,7 @@ const TeamCard = ({ member, onClick, isLarge = false }) => (
         relative overflow-hidden
     `}>
             {member.photo ? (
-                <img src={`${SERVER_URL}${member.photo}`} alt={member.name} className="w-full h-full object-cover" />
+                <img src={getImageUrl(member.photo)} alt={member.name} className="w-full h-full object-cover" />
             ) : (
                 <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-700 to-slate-800">
                     {member.name ? member.name.charAt(0) : '?'}
