@@ -13,15 +13,15 @@ export function GlobalBackground() {
         let animationFrameId;
 
         const resizeCanvas = () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight * 1.25; // Compensate for 80% zoom
+            canvas.width = window.innerWidth * 1.25;
+            canvas.height = window.innerHeight * 1.25;
         };
 
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
 
         let particles = [];
-        const particleCount = 160; // Increased for better distribution
+        const particleCount = 350; // Increased for better distribution
 
         // Mouse/Touch state
         const input = {
@@ -34,13 +34,14 @@ export function GlobalBackground() {
 
         // Input Handlers
         const handleMove = (x, y) => {
-            input.x = x;
-            input.y = y;
+            // Apply 1.25 scaling to match the global 80% zoom
+            input.x = x * 1.25;
+            input.y = y * 1.25;
             input.isIdle = false;
             input.lastInputTime = Date.now();
         };
 
-        const onMouseMove = (e) => handleMove(e.x, e.y);
+        const onMouseMove = (e) => handleMove(e.clientX, e.clientY);
         const onTouchMove = (e) => {
             if (e.touches.length > 0) {
                 handleMove(e.touches[0].clientX, e.touches[0].clientY);
@@ -60,6 +61,7 @@ export function GlobalBackground() {
 
         class Particle {
             constructor() {
+                // Ensure particles cover the potentially larger scaled area
                 this.x = Math.random() * canvas.width;
                 this.y = Math.random() * canvas.height;
                 this.vx = (Math.random() - 0.5) * 1;
