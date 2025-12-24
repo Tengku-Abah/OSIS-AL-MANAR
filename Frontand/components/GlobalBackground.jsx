@@ -85,11 +85,12 @@ export function GlobalBackground() {
                 ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
                 ctx.fillStyle = this.color + this.alpha + ')';
 
-                ctx.shadowBlur = 15;
-                ctx.shadowColor = `rgb(${this.baseColor})`;
+                // Removed shadowBlur for performance
+                // ctx.shadowBlur = 15;
+                // ctx.shadowColor = `rgb(${this.baseColor})`;
 
                 ctx.fill();
-                ctx.shadowBlur = 0;
+                // ctx.shadowBlur = 0;
             }
         }
 

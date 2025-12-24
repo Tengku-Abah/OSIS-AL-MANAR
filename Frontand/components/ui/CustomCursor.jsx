@@ -1,15 +1,16 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { motion, useMotionValue } from 'framer-motion';
+import { motion, useMotionValue, useSpring } from 'framer-motion';
 
 export const CustomCursor = () => {
     const [isHovered, setIsHovered] = useState(false);
     const [isClicked, setIsClicked] = useState(false);
 
-    // Mouse position state (INSTANT tracking, no spring lag)
-    const cursorX = useMotionValue(-100);
-    const cursorY = useMotionValue(-100);
+    // Mouse position state (with Spring smoothing)
+    const smoothOptions = { damping: 20, stiffness: 300, mass: 0.5 };
+    const cursorX = useSpring(-100, smoothOptions);
+    const cursorY = useSpring(-100, smoothOptions);
 
     useEffect(() => {
         const moveCursor = (e) => {
