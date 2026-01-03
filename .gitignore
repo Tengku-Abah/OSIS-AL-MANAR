@@ -10,3 +10,4 @@ build
 .idea
 *.log
 service-account-key.json
+service-account.json
