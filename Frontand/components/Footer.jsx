@@ -74,11 +74,17 @@ export function Footer() {
                     <div className="md:col-span-3">
                         <h4 className="text-white font-bold mb-8 text-lg">Platform</h4>
                         <ul className="space-y-4">
-                            {['Beranda', 'Tentang Kami', 'Struktur Organisasi', 'Agenda'].map((item, i) => (
+                            {[
+                                { label: 'Beranda', href: '/' },
+                                { label: 'Tentang Kami', href: '/organization' },
+                                { label: 'Program', href: '/program' },
+                                { label: 'Agenda', href: '/agenda' },
+                                { label: 'Aspirasi', href: '/aspirasi' }
+                            ].map((item, i) => (
                                 <li key={i}>
-                                    <a href="#" className="group flex items-center gap-2 text-slate-400 hover:text-neon-gold transition-colors">
+                                    <a href={item.href} className="group flex items-center gap-2 text-slate-400 hover:text-neon-gold transition-colors">
                                         <div className="w-1.5 h-1.5 rounded-full bg-white/20 group-hover:bg-neon-gold transition-colors" />
-                                        {item}
+                                        {item.label}
                                     </a>
                                 </li>
                             ))}
@@ -106,12 +112,9 @@ export function Footer() {
 
                 <div className="flex flex-col md:flex-row items-center justify-between text-slate-500 text-sm">
                     <p>© {currentYear} OSIS AL-Manar. All rights reserved.</p>
-                    <div className="flex items-center gap-6 mt-4 md:mt-0">
-                        <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
-                        <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
-                        <span className="flex items-center gap-1">
-                            Made with <span className="text-red-500 animate-pulse">❤️</span> by Antigravity
-                        </span>
+                    <div className="flex items-center gap-6 mt-4 md:mt-0">                        <span className="flex items-center gap-1">
+                        Made with by Tengku Afif
+                    </span>
                     </div>
                 </div>
             </div>
