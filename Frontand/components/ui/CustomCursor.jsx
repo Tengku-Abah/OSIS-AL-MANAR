@@ -1,21 +1,18 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
-import { motion, useMotionValue, useSpring } from 'framer-motion';
+import React, { useEffect, useState, useRef } from 'react';
 
 export const CustomCursor = () => {
     const [isHovered, setIsHovered] = useState(false);
     const [isClicked, setIsClicked] = useState(false);
-
-    // Mouse position state (with Spring smoothing)
-    const smoothOptions = { damping: 20, stiffness: 300, mass: 0.5 };
-    const cursorX = useSpring(-100, smoothOptions);
-    const cursorY = useSpring(-100, smoothOptions);
+    const cursorRef = useRef(null);
 
     useEffect(() => {
         const moveCursor = (e) => {
-            cursorX.set(e.clientX - 10); // Center the 20px cursor
-            cursorY.set(e.clientY - 10);
+            if (cursorRef.current) {
+                // Use transform to position cursor - this bypasses zoom issues
+                cursorRef.current.style.transform = `translate(${e.clientX - 10}px, ${e.clientY - 10}px)`;
+            }
         };
 
         const handleMouseDown = () => setIsClicked(true);
@@ -45,30 +42,31 @@ export const CustomCursor = () => {
             window.removeEventListener('mouseup', handleMouseUp);
             window.removeEventListener('mouseover', handleMouseOver);
         };
-    }, [cursorX, cursorY]);
+    }, []);
 
     return (
-        <div className="pointer-events-none fixed inset-0 z-[9999] hidden md:block mix-blend-difference">
-            <motion.div
-                className="absolute top-0 left-0 border-2 border-white bg-white/20"
-                style={{
-                    x: cursorX,
-                    y: cursorY,
-                    width: 20,
-                    height: 20,
-                    borderRadius: 0, // Sharp square
-                }}
-                animate={{
-                    rotate: isHovered ? 45 : 0, // Rotate to diamond on hover
-                    scale: isHovered ? 1.5 : (isClicked ? 0.8 : 1),
-                    backgroundColor: isHovered ? 'rgba(255, 215, 0, 0.5)' : 'rgba(255, 255, 255, 0)',
-                    borderColor: isHovered ? '#ffd700' : '#ffffff',
-                }}
-                transition={{
-                    rotate: { duration: 0.2 },
-                    scale: { duration: 0.1 },
-                    backgroundColor: { duration: 0.2 }
-                }}
+        <div
+            ref={cursorRef}
+            className="pointer-events-none hidden md:block"
+            style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                width: 20,
+                height: 20,
+                zIndex: 99999,
+                mixBlendMode: 'difference',
+                // Reset zoom for this element
+                zoom: 1 / 0.75,
+            }}
+        >
+            <div
+                className={`
+                    w-full h-full border-2 transition-all duration-200
+                    ${isHovered ? 'rotate-45 scale-150 bg-yellow-500/50 border-yellow-500' : 'rotate-0 scale-100 bg-white/20 border-white'}
+                    ${isClicked ? 'scale-75' : ''}
+                `}
+                style={{ borderRadius: 0 }}
             />
         </div>
     );

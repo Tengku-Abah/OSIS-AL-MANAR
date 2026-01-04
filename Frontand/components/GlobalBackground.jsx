@@ -13,8 +13,9 @@ export function GlobalBackground() {
         let animationFrameId;
 
         const resizeCanvas = () => {
-            canvas.width = window.innerWidth * 1.25;
-            canvas.height = window.innerHeight * 1.25;
+            // 1/0.75 = 1.333 to compensate for 75% CSS zoom
+            canvas.width = window.innerWidth * (1 / 0.75);
+            canvas.height = window.innerHeight * (1 / 0.75);
         };
 
         window.addEventListener('resize', resizeCanvas);
@@ -34,9 +35,10 @@ export function GlobalBackground() {
 
         // Input Handlers
         const handleMove = (x, y) => {
-            // Apply 1.25 scaling to match the global 80% zoom
-            input.x = x * 1.25;
-            input.y = y * 1.25;
+            // Apply 1/0.75 scaling to match the global 75% zoom
+            const zoomFactor = 1 / 0.75;
+            input.x = x * zoomFactor;
+            input.y = y * zoomFactor;
             input.isIdle = false;
             input.lastInputTime = Date.now();
         };
