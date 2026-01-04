@@ -1,11 +1,38 @@
 "use client";
 
 import React from 'react';
-import { Rocket, Instagram, Youtube, Facebook, ArrowUpRight } from 'lucide-react';
+import { Rocket, Instagram, ArrowUpRight } from 'lucide-react';
 import { motion } from 'framer-motion';
+
+// Custom TikTok Icon Component
+const TikTokIcon = ({ size = 20 }) => (
+    <svg
+        width={size}
+        height={size}
+        viewBox="0 0 24 24"
+        fill="currentColor"
+        xmlns="http://www.w3.org/2000/svg"
+    >
+        <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.74 2.89 2.89 0 012.31-4.64c.298.003.595.04.88.11V9.4a6.33 6.33 0 00-1-.08A6.34 6.34 0 003 15.64a6.34 6.34 0 0010.66 4.65 6.3 6.3 0 001.71-4.33v-7.1a8.16 8.16 0 004.22 1.17V6.69h-.01z" />
+    </svg>
+);
 
 export function Footer() {
     const currentYear = new Date().getFullYear();
+
+    // Social media links
+    const socialLinks = [
+        {
+            icon: Instagram,
+            href: "https://www.instagram.com/osis.spinar_?igsh=NjFxOXZzZnc2Zncy",
+            label: "Instagram"
+        },
+        {
+            icon: TikTokIcon,
+            href: "https://www.tiktok.com/@osisspinar_offici?_r=1&_t=ZS-92l7NaiWirA",
+            label: "TikTok"
+        }
+    ];
 
     return (
         <footer className="relative pt-24 pb-12 overflow-hidden">
@@ -27,14 +54,13 @@ export function Footer() {
                             Organisasi Siswa Intra Sekolah (OSIS) yang berdedikasi menjadi suar pemandu bagi siswa untuk berinovasi, berprestasi, dan berakhlak mulia.
                         </p>
                         <div className="flex gap-4">
-                            {[
-                                { icon: Instagram, href: "#" },
-                                { icon: Youtube, href: "#" },
-                                { icon: Facebook, href: "#" }
-                            ].map((social, i) => (
+                            {socialLinks.map((social, i) => (
                                 <motion.a
                                     key={i}
                                     href={social.href}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    aria-label={social.label}
                                     whileHover={{ y: -5, color: '#FFD700' }}
                                     className="p-3 rounded-xl bg-white/5 border border-white/10 text-slate-400 hover:bg-white/10 transition-colors"
                                 >

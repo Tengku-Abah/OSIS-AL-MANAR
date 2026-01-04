@@ -76,7 +76,7 @@ export default function Home() {
               <Link href="/program" className="px-8 py-4 rounded-lg bg-neon-gold text-deep-navy font-bold hover:bg-yellow-400 transition-all shadow-[0_4px_14px_0_rgba(255,215,0,0.39)]">
                 Lihat Program Kerja
               </Link>
-              <Link href="/about" className="px-8 py-4 rounded-lg border border-white/10 text-white font-medium hover:bg-white/5 transition-all flex items-center gap-2">
+              <Link href="/organization" className="px-8 py-4 rounded-lg border border-white/10 text-white font-medium hover:bg-white/5 transition-all flex items-center gap-2">
                 Tentang Kami <ChevronRight className="w-4 h-4" />
               </Link>
             </div>
