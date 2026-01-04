@@ -90,11 +90,11 @@ export function Footer() {
                         <ul className="space-y-4 text-slate-400">
                             <li className="flex items-start gap-3">
                                 <span className="block w-6 h-[1px] bg-slate-600 mt-2.5" />
-                                <span>Sekolah Menengah Atas ...<br />Jl. Pendidikan No. 1, ...</span>
+                                <span>SMPIT AL-MANAR PANGKALANBUN<br />Madurejo, South Arut, West Kotawaringin Regency, Central Kalimantan 74181</span>
                             </li>
                             <li className="flex items-center gap-3">
                                 <span className="block w-6 h-[1px] bg-slate-600" />
-                                <a href="mailto:osis@sekolah.sch.id" className="hover:text-white transition-colors">osis@sekolah.sch.id</a>
+                                <a href="mailto:osisspinar@gmail.com" className="hover:text-white transition-colors">osisspinar@gmail.com</a>
                             </li>
                             <li className="flex items-center gap-3">
                                 <span className="block w-6 h-[1px] bg-slate-600" />
